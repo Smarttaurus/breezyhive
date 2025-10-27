@@ -240,6 +240,18 @@ export default function Home() {
                           <div className="bg-white text-gray-700 px-3.5 py-1.5 rounded-full text-[10px] font-bold whitespace-nowrap shadow-md border border-gray-200">
                             🪚 Carpentry
                           </div>
+                          <div className="bg-white text-gray-700 px-3.5 py-1.5 rounded-full text-[10px] font-bold whitespace-nowrap shadow-md border border-gray-200">
+                            🎨 Painting
+                          </div>
+                          <div className="bg-white text-gray-700 px-3.5 py-1.5 rounded-full text-[10px] font-bold whitespace-nowrap shadow-md border border-gray-200">
+                            🏠 Roofing
+                          </div>
+                          <div className="bg-white text-gray-700 px-3.5 py-1.5 rounded-full text-[10px] font-bold whitespace-nowrap shadow-md border border-gray-200">
+                            ❄️ HVAC
+                          </div>
+                          <div className="bg-white text-gray-700 px-3.5 py-1.5 rounded-full text-[10px] font-bold whitespace-nowrap shadow-md border border-gray-200">
+                            🌳 Landscaping
+                          </div>
                         </div>
                       </div>
 

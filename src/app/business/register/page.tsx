@@ -10,12 +10,17 @@ type FormData = {
   // Step 1: Business Info
   businessName: string
   businessType: string
+  companySize: string
+  address: string
+  city: string
+  postcode: string
 
   // Step 2: Account Info
   firstName: string
   lastName: string
   email: string
   phone: string
+  jobTitle: string
 
   // Step 3: Password
   password: string
@@ -23,6 +28,7 @@ type FormData = {
 
   // Step 4: Agreement
   agreeToTerms: boolean
+  agreeToMarketing: boolean
 }
 
 export default function BusinessRegisterPage() {
@@ -30,13 +36,19 @@ export default function BusinessRegisterPage() {
   const [formData, setFormData] = useState<FormData>({
     businessName: '',
     businessType: 'construction',
+    companySize: '1-10',
+    address: '',
+    city: '',
+    postcode: '',
     firstName: '',
     lastName: '',
     email: '',
     phone: '',
+    jobTitle: '',
     password: '',
     confirmPassword: '',
     agreeToTerms: false,
+    agreeToMarketing: false,
   })
   const [errors, setErrors] = useState<Partial<Record<keyof FormData, string>>>({})
   const [isLoading, setIsLoading] = useState(false)
@@ -59,6 +71,18 @@ export default function BusinessRegisterPage() {
       if (!formData.businessType) {
         newErrors.businessType = 'Please select a business type'
       }
+      if (!formData.companySize) {
+        newErrors.companySize = 'Please select company size'
+      }
+      if (!formData.address.trim()) {
+        newErrors.address = 'Business address is required'
+      }
+      if (!formData.city.trim()) {
+        newErrors.city = 'City is required'
+      }
+      if (!formData.postcode.trim()) {
+        newErrors.postcode = 'Postcode is required'
+      }
     } else if (step === 2) {
       if (!formData.firstName.trim()) {
         newErrors.firstName = 'First name is required'
@@ -73,6 +97,9 @@ export default function BusinessRegisterPage() {
       }
       if (!formData.phone.trim()) {
         newErrors.phone = 'Phone number is required'
+      }
+      if (!formData.jobTitle.trim()) {
+        newErrors.jobTitle = 'Job title is required'
       }
     } else if (step === 3) {
       if (!formData.password) {
@@ -181,6 +208,55 @@ export default function BusinessRegisterPage() {
                 )}
               </div>
 
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Company Size <span className="text-red-500">*</span>
+                </label>
+                <select
+                  className="input-field"
+                  value={formData.companySize}
+                  onChange={(e) => updateFormData('companySize', e.target.value)}
+                >
+                  <option value="1-10">1-10 employees</option>
+                  <option value="11-50">11-50 employees</option>
+                  <option value="51-200">51-200 employees</option>
+                  <option value="201-500">201-500 employees</option>
+                  <option value="500+">500+ employees</option>
+                </select>
+                {errors.companySize && (
+                  <p className="mt-1 text-sm text-red-500">{errors.companySize}</p>
+                )}
+              </div>
+
+              <Input
+                label="Business Address"
+                placeholder="123 Main Street"
+                value={formData.address}
+                onChange={(e) => updateFormData('address', e.target.value)}
+                error={errors.address}
+                required
+              />
+
+              <div className="grid grid-cols-2 gap-4">
+                <Input
+                  label="City"
+                  placeholder="London"
+                  value={formData.city}
+                  onChange={(e) => updateFormData('city', e.target.value)}
+                  error={errors.city}
+                  required
+                />
+
+                <Input
+                  label="Postcode"
+                  placeholder="SW1A 1AA"
+                  value={formData.postcode}
+                  onChange={(e) => updateFormData('postcode', e.target.value)}
+                  error={errors.postcode}
+                  required
+                />
+              </div>
+
               <Button onClick={handleNext} size="lg" className="w-full">
                 Continue
               </Button>
@@ -234,6 +310,15 @@ export default function BusinessRegisterPage() {
                 value={formData.phone}
                 onChange={(e) => updateFormData('phone', e.target.value)}
                 error={errors.phone}
+                required
+              />
+
+              <Input
+                label="Job Title"
+                placeholder="e.g., Managing Director, Operations Manager"
+                value={formData.jobTitle}
+                onChange={(e) => updateFormData('jobTitle', e.target.value)}
+                error={errors.jobTitle}
                 required
               />
 
@@ -326,8 +411,25 @@ export default function BusinessRegisterPage() {
                     <span className="font-medium capitalize">{formData.businessType}</span>
                   </div>
                   <div className="flex justify-between">
+                    <span className="text-gray-600">Company Size:</span>
+                    <span className="font-medium">{formData.companySize} employees</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-gray-600">Address:</span>
+                    <span className="font-medium">{formData.address}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-gray-600">Location:</span>
+                    <span className="font-medium">{formData.city}, {formData.postcode}</span>
+                  </div>
+                  <div className="border-t border-gray-300 my-2 pt-2"></div>
+                  <div className="flex justify-between">
                     <span className="text-gray-600">Contact:</span>
                     <span className="font-medium">{formData.firstName} {formData.lastName}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-gray-600">Job Title:</span>
+                    <span className="font-medium">{formData.jobTitle}</span>
                   </div>
                   <div className="flex justify-between">
                     <span className="text-gray-600">Email:</span>
@@ -349,28 +451,45 @@ export default function BusinessRegisterPage() {
               </div>
 
               {/* Terms checkbox */}
-              <div>
-                <label className="flex items-start gap-3 cursor-pointer">
-                  <input
-                    type="checkbox"
-                    className="mt-1 w-5 h-5 text-primary border-gray-300 rounded focus:ring-primary"
-                    checked={formData.agreeToTerms}
-                    onChange={(e) => updateFormData('agreeToTerms', e.target.checked)}
-                  />
-                  <span className="text-sm text-gray-600">
-                    I agree to the{' '}
-                    <Link href="#" className="text-primary hover:text-primary-dark font-medium">
-                      Terms of Service
-                    </Link>{' '}
-                    and{' '}
-                    <Link href="#" className="text-primary hover:text-primary-dark font-medium">
-                      Privacy Policy
-                    </Link>
-                  </span>
-                </label>
-                {errors.agreeToTerms && (
-                  <p className="mt-2 text-sm text-red-500">{errors.agreeToTerms}</p>
-                )}
+              <div className="space-y-4">
+                <div>
+                  <label className="flex items-start gap-3 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      className="mt-1 w-5 h-5 text-primary border-gray-300 rounded focus:ring-primary"
+                      checked={formData.agreeToTerms}
+                      onChange={(e) => updateFormData('agreeToTerms', e.target.checked)}
+                    />
+                    <span className="text-sm text-gray-600">
+                      I agree to the{' '}
+                      <Link href="#" className="text-primary hover:text-primary-dark font-medium">
+                        Terms of Service
+                      </Link>{' '}
+                      and{' '}
+                      <Link href="#" className="text-primary hover:text-primary-dark font-medium">
+                        Privacy Policy
+                      </Link>{' '}
+                      <span className="text-red-500">*</span>
+                    </span>
+                  </label>
+                  {errors.agreeToTerms && (
+                    <p className="mt-2 text-sm text-red-500">{errors.agreeToTerms}</p>
+                  )}
+                </div>
+
+                <div>
+                  <label className="flex items-start gap-3 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      className="mt-1 w-5 h-5 text-primary border-gray-300 rounded focus:ring-primary"
+                      checked={formData.agreeToMarketing}
+                      onChange={(e) => updateFormData('agreeToMarketing', e.target.checked)}
+                    />
+                    <span className="text-sm text-gray-600">
+                      I would like to receive marketing communications about BreezyHive products, services, and events (optional)
+                    </span>
+                  </label>
+                </div>
               </div>
 
               <div className="flex gap-4">
