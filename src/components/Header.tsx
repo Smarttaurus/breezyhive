@@ -27,10 +27,10 @@ export default function Header({ variant = 'default' }: HeaderProps) {
               <Link href="/business" className="text-gray-700 hover:text-primary font-medium transition">
                 For Business
               </Link>
-              <Link href="/login" className="text-gray-700 hover:text-primary font-medium transition">
-                Login
-              </Link>
-              <Button href="/business/register" size="sm">
+              <a href="https://enterprise.breezyhive.com/login" className="text-gray-700 hover:text-primary font-medium transition">
+                Enterprise Login
+              </a>
+              <Button href="https://enterprise.breezyhive.com/register" size="sm">
                 Get Started
               </Button>
             </>
@@ -39,16 +39,16 @@ export default function Header({ variant = 'default' }: HeaderProps) {
               <Link href="/" className="text-gray-700 hover:text-primary font-medium transition">
                 Home
               </Link>
-              <Link href="/business#features" className="text-gray-700 hover:text-primary font-medium transition">
+              <Link href="#features" className="text-gray-700 hover:text-primary font-medium transition">
                 Features
               </Link>
-              <Link href="/business#pricing" className="text-gray-700 hover:text-primary font-medium transition">
+              <Link href="#pricing" className="text-gray-700 hover:text-primary font-medium transition">
                 Pricing
               </Link>
-              <Link href="/business/login" className="text-gray-700 hover:text-primary font-medium transition">
+              <Link href="/login" className="text-gray-700 hover:text-primary font-medium transition">
                 Login
               </Link>
-              <Button href="/business/register" size="sm">
+              <Button href="/register" size="sm">
                 Start Free Trial
               </Button>
             </>
