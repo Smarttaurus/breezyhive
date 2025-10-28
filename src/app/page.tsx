@@ -523,7 +523,7 @@ export default function Home() {
                   <span>Real-time reporting</span>
                 </li>
               </ul>
-              <Button href="https://enterprise.breezyhive.com" variant="secondary" className="w-full">
+              <Button href="https://enterprise.breezyhive.com/business" variant="secondary" className="w-full">
                 Learn More
               </Button>
             </div>
@@ -1032,7 +1032,7 @@ export default function Home() {
             <Button href="#download" variant="secondary" size="lg">
               Download App
             </Button>
-            <Button href="https://enterprise.breezyhive.com" variant="outline" size="lg" className="bg-transparent border-white text-white hover:bg-white hover:text-primary">
+            <Button href="https://enterprise.breezyhive.com/business" variant="outline" size="lg" className="bg-transparent border-white text-white hover:bg-white hover:text-primary">
               Enterprise Solutions
             </Button>
           </div>

@@ -633,7 +633,7 @@ export default function BusinessRegisterPage() {
 
           <div className="mt-8 text-center text-sm text-gray-600">
             Already have an account?{' '}
-            <Link href="/login" className="text-primary hover:text-primary-dark font-semibold">
+            <Link href="/business/login" className="text-primary hover:text-primary-dark font-semibold">
               Sign in
             </Link>
           </div>

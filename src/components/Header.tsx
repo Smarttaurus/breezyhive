@@ -27,10 +27,10 @@ export default function Header({ variant = 'default' }: HeaderProps) {
               <Link href="/business" className="text-gray-700 hover:text-primary font-medium transition">
                 For Business
               </Link>
-              <a href="https://enterprise.breezyhive.com/login" className="text-gray-700 hover:text-primary font-medium transition">
+              <a href="https://enterprise.breezyhive.com/business/login" className="text-gray-700 hover:text-primary font-medium transition">
                 Enterprise Login
               </a>
-              <Button href="https://enterprise.breezyhive.com/register" size="sm">
+              <Button href="https://enterprise.breezyhive.com/business/register" size="sm">
                 Get Started
               </Button>
             </>
@@ -45,10 +45,10 @@ export default function Header({ variant = 'default' }: HeaderProps) {
               <Link href="#pricing" className="text-gray-700 hover:text-primary font-medium transition">
                 Pricing
               </Link>
-              <Link href="/login" className="text-gray-700 hover:text-primary font-medium transition">
+              <Link href="/business/login" className="text-gray-700 hover:text-primary font-medium transition">
                 Login
               </Link>
-              <Button href="/register" size="sm">
+              <Button href="/business/register" size="sm">
                 Start Free Trial
               </Button>
             </>
