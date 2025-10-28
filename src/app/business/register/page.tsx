@@ -149,116 +149,216 @@ export default function BusinessRegisterPage() {
     }, 1000)
   }
 
-  const renderProgressBar = () => (
-    <div className="mb-8">
-      <div className="flex items-center justify-between mb-2">
-        <span className="text-sm font-medium text-gray-600">Step {step} of 4</span>
-        <span className="text-sm font-medium text-primary">{Math.round((step / 4) * 100)}%</span>
+  const renderProgressBar = () => {
+    const steps = [
+      { num: 1, label: 'Business' },
+      { num: 2, label: 'Contact' },
+      { num: 3, label: 'Security' },
+      { num: 4, label: 'Review' },
+    ]
+
+    return (
+      <div className="mb-12">
+        <div className="flex items-center justify-between mb-3">
+          <span className="text-sm font-bold text-gray-900">Step {step} of 4</span>
+          <span className="text-sm font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
+            {Math.round((step / 4) * 100)}% Complete
+          </span>
+        </div>
+
+        {/* Desktop Progress Steps */}
+        <div className="hidden md:flex items-center justify-between mb-4">
+          {steps.map((s, index) => (
+            <div key={s.num} className="flex items-center flex-1">
+              <div className="flex flex-col items-center flex-1">
+                <div
+                  className={`w-10 h-10 rounded-full flex items-center justify-center font-bold text-sm transition-all duration-300 ${
+                    step > s.num
+                      ? 'bg-gradient-to-br from-green-400 to-emerald-600 text-white shadow-lg'
+                      : step === s.num
+                      ? 'bg-gradient-to-br from-primary to-accent text-white shadow-xl scale-110'
+                      : 'bg-gray-200 text-gray-500'
+                  }`}
+                >
+                  {step > s.num ? '✓' : s.num}
+                </div>
+                <span
+                  className={`text-xs mt-2 font-semibold ${
+                    step >= s.num ? 'text-gray-900' : 'text-gray-400'
+                  }`}
+                >
+                  {s.label}
+                </span>
+              </div>
+              {index < steps.length - 1 && (
+                <div className="flex-1 h-1 mx-2 relative">
+                  <div className="absolute inset-0 bg-gray-200 rounded-full"></div>
+                  <div
+                    className={`absolute inset-0 bg-gradient-to-r from-primary to-accent rounded-full transition-all duration-500 ${
+                      step > s.num ? 'w-full' : 'w-0'
+                    }`}
+                  ></div>
+                </div>
+              )}
+            </div>
+          ))}
+        </div>
+
+        {/* Mobile Progress Bar */}
+        <div className="md:hidden">
+          <div className="w-full h-3 bg-gray-200 rounded-full overflow-hidden shadow-inner">
+            <div
+              className="h-full bg-gradient-to-r from-primary via-accent to-primary bg-[length:200%_100%] animate-gradient transition-all duration-500 shadow-lg"
+              style={{ width: `${(step / 4) * 100}%` }}
+            />
+          </div>
+        </div>
       </div>
-      <div className="w-full h-2 bg-gray-200 rounded-full overflow-hidden">
-        <div
-          className="h-full bg-gradient-honey transition-all duration-300"
-          style={{ width: `${(step / 4) * 100}%` }}
-        />
-      </div>
-    </div>
-  )
+    )
+  }
 
   const renderStep = () => {
     switch (step) {
       case 1:
         return (
           <>
-            <div className="text-center mb-8">
-              <h2 className="text-2xl font-bold text-gray-900 mb-2">Tell us about your business</h2>
-              <p className="text-gray-600">Let's start with some basic information</p>
+            <div className="text-center mb-10">
+              <div className="inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-primary/10 to-accent/10 rounded-full mb-6">
+                <span className="text-2xl">🏢</span>
+                <span className="text-sm font-bold text-primary">Business Information</span>
+              </div>
+              <h2 className="text-3xl md:text-4xl font-black text-gray-900 mb-3">Tell us about your business</h2>
+              <p className="text-lg text-gray-600">Let's start with some basic information</p>
             </div>
 
-            <div className="space-y-6">
-              <Input
-                label="Business Name"
-                placeholder="e.g., Smith Construction Ltd"
-                value={formData.businessName}
-                onChange={(e) => updateFormData('businessName', e.target.value)}
-                error={errors.businessName}
-                required
-              />
+            <div className="space-y-8">
+              <div>
+                <Input
+                  label="Business Name"
+                  placeholder="e.g., Smith Construction Ltd"
+                  value={formData.businessName}
+                  onChange={(e) => updateFormData('businessName', e.target.value)}
+                  error={errors.businessName}
+                  required
+                />
+              </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-sm font-bold text-gray-900 mb-3">
                   Business Type <span className="text-red-500">*</span>
                 </label>
-                <select
-                  className="input-field"
-                  value={formData.businessType}
-                  onChange={(e) => updateFormData('businessType', e.target.value)}
-                >
-                  <option value="construction">Construction</option>
-                  <option value="plumbing">Plumbing</option>
-                  <option value="electrical">Electrical</option>
-                  <option value="carpentry">Carpentry</option>
-                  <option value="painting">Painting & Decorating</option>
-                  <option value="roofing">Roofing</option>
-                  <option value="hvac">HVAC</option>
-                  <option value="landscaping">Landscaping</option>
-                  <option value="other">Other</option>
-                </select>
+                <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+                  {[
+                    { value: 'construction', label: 'Construction', icon: '🏗️' },
+                    { value: 'plumbing', label: 'Plumbing', icon: '🔧' },
+                    { value: 'electrical', label: 'Electrical', icon: '⚡' },
+                    { value: 'carpentry', label: 'Carpentry', icon: '🪚' },
+                    { value: 'painting', label: 'Painting', icon: '🎨' },
+                    { value: 'roofing', label: 'Roofing', icon: '🏠' },
+                    { value: 'hvac', label: 'HVAC', icon: '❄️' },
+                    { value: 'landscaping', label: 'Landscaping', icon: '🌳' },
+                    { value: 'flooring', label: 'Flooring', icon: '🪵' },
+                    { value: 'masonry', label: 'Masonry', icon: '🧱' },
+                    { value: 'glazing', label: 'Glazing', icon: '🪟' },
+                    { value: 'other', label: 'Other', icon: '📋' },
+                  ].map((type) => (
+                    <button
+                      key={type.value}
+                      type="button"
+                      onClick={() => updateFormData('businessType', type.value)}
+                      className={`flex items-center gap-3 p-4 rounded-xl border-2 transition-all duration-200 ${
+                        formData.businessType === type.value
+                          ? 'border-primary bg-gradient-to-br from-primary/10 to-accent/10 shadow-lg transform scale-105'
+                          : 'border-gray-200 bg-white hover:border-primary/50 hover:shadow-md'
+                      }`}
+                    >
+                      <span className="text-2xl">{type.icon}</span>
+                      <span className={`text-sm font-semibold ${
+                        formData.businessType === type.value ? 'text-primary' : 'text-gray-700'
+                      }`}>
+                        {type.label}
+                      </span>
+                    </button>
+                  ))}
+                </div>
                 {errors.businessType && (
-                  <p className="mt-1 text-sm text-red-500">{errors.businessType}</p>
+                  <p className="mt-2 text-sm text-red-500 font-medium">{errors.businessType}</p>
                 )}
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-sm font-bold text-gray-900 mb-3">
                   Company Size <span className="text-red-500">*</span>
                 </label>
-                <select
-                  className="input-field"
-                  value={formData.companySize}
-                  onChange={(e) => updateFormData('companySize', e.target.value)}
-                >
-                  <option value="1-10">1-10 employees</option>
-                  <option value="11-50">11-50 employees</option>
-                  <option value="51-200">51-200 employees</option>
-                  <option value="201-500">201-500 employees</option>
-                  <option value="500+">500+ employees</option>
-                </select>
+                <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
+                  {[
+                    { value: '1-10', label: '1-10', icon: '👤' },
+                    { value: '11-50', label: '11-50', icon: '👥' },
+                    { value: '51-200', label: '51-200', icon: '👨‍👩‍👧‍👦' },
+                    { value: '201-500', label: '201-500', icon: '🏢' },
+                    { value: '500+', label: '500+', icon: '🏙️' },
+                  ].map((size) => (
+                    <button
+                      key={size.value}
+                      type="button"
+                      onClick={() => updateFormData('companySize', size.value)}
+                      className={`flex flex-col items-center gap-2 p-4 rounded-xl border-2 transition-all duration-200 ${
+                        formData.companySize === size.value
+                          ? 'border-primary bg-gradient-to-br from-primary/10 to-accent/10 shadow-lg'
+                          : 'border-gray-200 bg-white hover:border-primary/50 hover:shadow-md'
+                      }`}
+                    >
+                      <span className="text-2xl">{size.icon}</span>
+                      <span className={`text-sm font-bold ${
+                        formData.companySize === size.value ? 'text-primary' : 'text-gray-700'
+                      }`}>
+                        {size.label}
+                      </span>
+                      <span className="text-xs text-gray-500">employees</span>
+                    </button>
+                  ))}
+                </div>
                 {errors.companySize && (
-                  <p className="mt-1 text-sm text-red-500">{errors.companySize}</p>
+                  <p className="mt-2 text-sm text-red-500 font-medium">{errors.companySize}</p>
                 )}
               </div>
 
-              <Input
-                label="Business Address"
-                placeholder="123 Main Street"
-                value={formData.address}
-                onChange={(e) => updateFormData('address', e.target.value)}
-                error={errors.address}
-                required
-              />
+              <div className="pt-4 border-t border-gray-200">
+                <h3 className="text-lg font-bold text-gray-900 mb-6">Business Location</h3>
+                <div className="space-y-5">
+                  <Input
+                    label="Business Address"
+                    placeholder="123 Main Street"
+                    value={formData.address}
+                    onChange={(e) => updateFormData('address', e.target.value)}
+                    error={errors.address}
+                    required
+                  />
 
-              <div className="grid grid-cols-2 gap-4">
-                <Input
-                  label="City"
-                  placeholder="London"
-                  value={formData.city}
-                  onChange={(e) => updateFormData('city', e.target.value)}
-                  error={errors.city}
-                  required
-                />
+                  <div className="grid grid-cols-2 gap-4">
+                    <Input
+                      label="City"
+                      placeholder="London"
+                      value={formData.city}
+                      onChange={(e) => updateFormData('city', e.target.value)}
+                      error={errors.city}
+                      required
+                    />
 
-                <Input
-                  label="Postcode"
-                  placeholder="SW1A 1AA"
-                  value={formData.postcode}
-                  onChange={(e) => updateFormData('postcode', e.target.value)}
-                  error={errors.postcode}
-                  required
-                />
+                    <Input
+                      label="Postcode"
+                      placeholder="SW1A 1AA"
+                      value={formData.postcode}
+                      onChange={(e) => updateFormData('postcode', e.target.value)}
+                      error={errors.postcode}
+                      required
+                    />
+                  </div>
+                </div>
               </div>
 
-              <Button onClick={handleNext} size="lg" className="w-full">
-                Continue
+              <Button onClick={handleNext} size="lg" className="w-full mt-8">
+                Continue to Contact Information →
               </Button>
             </div>
           </>
