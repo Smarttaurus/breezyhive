@@ -36,7 +36,7 @@ export default function BusinessRegisterPage() {
   // Force redeployment - premium UI with card-based selection
   const [formData, setFormData] = useState<FormData>({
     businessName: '',
-    businessType: 'construction',
+    businessType: '',
     companySize: '1-10',
     address: '',
     city: '',
@@ -53,6 +53,7 @@ export default function BusinessRegisterPage() {
   })
   const [errors, setErrors] = useState<Partial<Record<keyof FormData, string>>>({})
   const [isLoading, setIsLoading] = useState(false)
+  const [showBusinessTypeDropdown, setShowBusinessTypeDropdown] = useState(false)
 
   const updateFormData = (field: keyof FormData, value: string | boolean) => {
     setFormData((prev) => ({ ...prev, [field]: value }))
@@ -244,82 +245,237 @@ export default function BusinessRegisterPage() {
                 />
               </div>
 
-              <div>
+              <div className="relative">
                 <label className="block text-sm font-bold text-gray-900 mb-3">
                   Business Type <span className="text-red-500">*</span>
                 </label>
-                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 max-h-[500px] overflow-y-auto pr-2">
-                  {[
-                    { value: 'plumbing', label: 'Plumbing & Heating', icon: '🔧' },
-                    { value: 'electrical', label: 'Electrical', icon: '⚡' },
-                    { value: 'building', label: 'Building & Construction', icon: '🏗️' },
-                    { value: 'roofing', label: 'Roofing', icon: '🏠' },
-                    { value: 'carpentry', label: 'Carpentry & Joinery', icon: '🪚' },
-                    { value: 'painting', label: 'Painting & Decorating', icon: '🎨' },
-                    { value: 'plastering', label: 'Plastering & Rendering', icon: '🧱' },
-                    { value: 'flooring', label: 'Flooring', icon: '🪵' },
-                    { value: 'tiling', label: 'Tiling', icon: '⬜' },
-                    { value: 'kitchen_bathroom', label: 'Kitchen & Bathroom', icon: '🚿' },
-                    { value: 'windows_doors', label: 'Windows & Doors', icon: '🪟' },
-                    { value: 'landscaping', label: 'Landscaping & Gardening', icon: '🌳' },
-                    { value: 'groundwork', label: 'Groundwork & Drainage', icon: '⛏️' },
-                    { value: 'driveways', label: 'Driveways & Paving', icon: '🚗' },
-                    { value: 'gas', label: 'Gas Services', icon: '🔥' },
-                    { value: 'hvac', label: 'HVAC & Air Conditioning', icon: '❄️' },
-                    { value: 'insulation', label: 'Insulation & Damp Proofing', icon: '🛡️' },
-                    { value: 'specialist', label: 'Specialist Services', icon: '🔬' },
-                    { value: 'demolition', label: 'Demolition & Clearance', icon: '🔨' },
-                    { value: 'scaffolding', label: 'Scaffolding', icon: '🏗️' },
-                    { value: 'security', label: 'Security & Alarms', icon: '🔒' },
-                    { value: 'solar', label: 'Solar & Renewable Energy', icon: '☀️' },
-                    { value: 'cleaning', label: 'Cleaning Services', icon: '✨' },
-                    { value: 'pest_control', label: 'Pest Control', icon: '🐛' },
-                    { value: 'handyman', label: 'Handyman Services', icon: '🔧' },
-                    { value: 'plant_hire', label: 'Plant Hire & Equipment', icon: '🚜' },
-                    { value: 'tool_hire', label: 'Tool Hire', icon: '🛠️' },
-                    { value: 'skip_hire', label: 'Skip Hire & Waste', icon: '🗑️' },
-                    { value: 'removals', label: 'Removals & Storage', icon: '📦' },
-                    { value: 'masonry', label: 'Masonry & Stonework', icon: '🧱' },
-                    { value: 'welding', label: 'Welding & Metalwork', icon: '⚙️' },
-                    { value: 'concrete', label: 'Concrete Services', icon: '🏗️' },
-                    { value: 'crane_lifting', label: 'Crane & Lifting Services', icon: '🏗️' },
-                    { value: 'access_equipment', label: 'Access Equipment', icon: '🪜' },
-                    { value: 'piling', label: 'Piling & Drilling', icon: '⬇️' },
-                    { value: 'site_services', label: 'Site Services', icon: '🚧' },
-                    { value: 'surveying', label: 'Surveying & Engineering', icon: '📐' },
-                    { value: 'shuttering', label: 'Shuttering & Formwork', icon: '📋' },
-                    { value: 'suspended_ceilings', label: 'Suspended Ceilings', icon: '▪️' },
-                    { value: 'partitions', label: 'Partitions & Dividers', icon: '▥' },
-                    { value: 'cladding', label: 'Cladding & Facades', icon: '🏢' },
-                    { value: 'fire_safety', label: 'Fire Safety & Protection', icon: '🧯' },
-                    { value: 'waterproofing', label: 'Waterproofing', icon: '💧' },
-                    { value: 'excavation', label: 'Excavation & Earthworks', icon: '⛏️' },
-                    { value: 'mechanical', label: 'Mechanical Services', icon: '⚙️' },
-                    { value: 'shopfitting', label: 'Shopfitting & Joinery', icon: '🏪' },
-                    { value: 'signage', label: 'Signage & Graphics', icon: '🪧' },
-                    { value: 'flooring_industrial', label: 'Industrial Flooring', icon: '🏭' },
-                    { value: 'testing_inspection', label: 'Testing & Inspection', icon: '📋' },
-                    { value: 'other', label: 'Other Services', icon: '⋯' },
-                  ].map((type) => (
-                    <button
-                      key={type.value}
-                      type="button"
-                      onClick={() => updateFormData('businessType', type.value)}
-                      className={`flex items-center gap-3 p-4 rounded-xl border-2 transition-all duration-200 ${
-                        formData.businessType === type.value
-                          ? 'border-primary bg-gradient-to-br from-primary/10 to-accent/10 shadow-lg transform scale-105'
-                          : 'border-gray-200 bg-white hover:border-primary/50 hover:shadow-md'
-                      }`}
-                    >
-                      <span className="text-2xl">{type.icon}</span>
-                      <span className={`text-sm font-semibold ${
-                        formData.businessType === type.value ? 'text-primary' : 'text-gray-700'
-                      }`}>
-                        {type.label}
-                      </span>
-                    </button>
-                  ))}
-                </div>
+
+                {/* Custom Dropdown Button */}
+                <button
+                  type="button"
+                  onClick={() => setShowBusinessTypeDropdown(!showBusinessTypeDropdown)}
+                  className={`w-full flex items-center justify-between px-5 py-4 rounded-xl border-2 transition-all duration-200 bg-white ${
+                    showBusinessTypeDropdown
+                      ? 'border-primary shadow-lg ring-2 ring-primary/20'
+                      : errors.businessType
+                      ? 'border-red-500'
+                      : 'border-gray-200 hover:border-primary/50'
+                  }`}
+                >
+                  <div className="flex items-center gap-3">
+                    {formData.businessType ? (
+                      <>
+                        <span className="text-2xl">
+                          {
+                            [
+                              { value: 'plumbing', icon: '🔧' },
+                              { value: 'electrical', icon: '⚡' },
+                              { value: 'building', icon: '🏗️' },
+                              { value: 'roofing', icon: '🏠' },
+                              { value: 'carpentry', icon: '🪚' },
+                              { value: 'painting', icon: '🎨' },
+                              { value: 'plastering', icon: '🧱' },
+                              { value: 'flooring', icon: '🪵' },
+                              { value: 'tiling', icon: '⬜' },
+                              { value: 'kitchen_bathroom', icon: '🚿' },
+                              { value: 'windows_doors', icon: '🪟' },
+                              { value: 'landscaping', icon: '🌳' },
+                              { value: 'groundwork', icon: '⛏️' },
+                              { value: 'driveways', icon: '🚗' },
+                              { value: 'gas', icon: '🔥' },
+                              { value: 'hvac', icon: '❄️' },
+                              { value: 'insulation', icon: '🛡️' },
+                              { value: 'specialist', icon: '🔬' },
+                              { value: 'demolition', icon: '🔨' },
+                              { value: 'scaffolding', icon: '🏗️' },
+                              { value: 'security', icon: '🔒' },
+                              { value: 'solar', icon: '☀️' },
+                              { value: 'cleaning', icon: '✨' },
+                              { value: 'pest_control', icon: '🐛' },
+                              { value: 'handyman', icon: '🔧' },
+                              { value: 'plant_hire', icon: '🚜' },
+                              { value: 'tool_hire', icon: '🛠️' },
+                              { value: 'skip_hire', icon: '🗑️' },
+                              { value: 'removals', icon: '📦' },
+                              { value: 'masonry', icon: '🧱' },
+                              { value: 'welding', icon: '⚙️' },
+                              { value: 'concrete', icon: '🏗️' },
+                              { value: 'crane_lifting', icon: '🏗️' },
+                              { value: 'access_equipment', icon: '🪜' },
+                              { value: 'piling', icon: '⬇️' },
+                              { value: 'site_services', icon: '🚧' },
+                              { value: 'surveying', icon: '📐' },
+                              { value: 'shuttering', icon: '📋' },
+                              { value: 'suspended_ceilings', icon: '▪️' },
+                              { value: 'partitions', icon: '▥' },
+                              { value: 'cladding', icon: '🏢' },
+                              { value: 'fire_safety', icon: '🧯' },
+                              { value: 'waterproofing', icon: '💧' },
+                              { value: 'excavation', icon: '⛏️' },
+                              { value: 'mechanical', icon: '⚙️' },
+                              { value: 'shopfitting', icon: '🏪' },
+                              { value: 'signage', icon: '🪧' },
+                              { value: 'flooring_industrial', icon: '🏭' },
+                              { value: 'testing_inspection', icon: '📋' },
+                              { value: 'other', icon: '⋯' },
+                            ].find((t) => t.value === formData.businessType)?.icon
+                          }
+                        </span>
+                        <span className="text-base font-semibold text-gray-900">
+                          {
+                            [
+                              { value: 'plumbing', label: 'Plumbing & Heating' },
+                              { value: 'electrical', label: 'Electrical' },
+                              { value: 'building', label: 'Building & Construction' },
+                              { value: 'roofing', label: 'Roofing' },
+                              { value: 'carpentry', label: 'Carpentry & Joinery' },
+                              { value: 'painting', label: 'Painting & Decorating' },
+                              { value: 'plastering', label: 'Plastering & Rendering' },
+                              { value: 'flooring', label: 'Flooring' },
+                              { value: 'tiling', label: 'Tiling' },
+                              { value: 'kitchen_bathroom', label: 'Kitchen & Bathroom' },
+                              { value: 'windows_doors', label: 'Windows & Doors' },
+                              { value: 'landscaping', label: 'Landscaping & Gardening' },
+                              { value: 'groundwork', label: 'Groundwork & Drainage' },
+                              { value: 'driveways', label: 'Driveways & Paving' },
+                              { value: 'gas', label: 'Gas Services' },
+                              { value: 'hvac', label: 'HVAC & Air Conditioning' },
+                              { value: 'insulation', label: 'Insulation & Damp Proofing' },
+                              { value: 'specialist', label: 'Specialist Services' },
+                              { value: 'demolition', label: 'Demolition & Clearance' },
+                              { value: 'scaffolding', label: 'Scaffolding' },
+                              { value: 'security', label: 'Security & Alarms' },
+                              { value: 'solar', label: 'Solar & Renewable Energy' },
+                              { value: 'cleaning', label: 'Cleaning Services' },
+                              { value: 'pest_control', label: 'Pest Control' },
+                              { value: 'handyman', label: 'Handyman Services' },
+                              { value: 'plant_hire', label: 'Plant Hire & Equipment' },
+                              { value: 'tool_hire', label: 'Tool Hire' },
+                              { value: 'skip_hire', label: 'Skip Hire & Waste' },
+                              { value: 'removals', label: 'Removals & Storage' },
+                              { value: 'masonry', label: 'Masonry & Stonework' },
+                              { value: 'welding', label: 'Welding & Metalwork' },
+                              { value: 'concrete', label: 'Concrete Services' },
+                              { value: 'crane_lifting', label: 'Crane & Lifting Services' },
+                              { value: 'access_equipment', label: 'Access Equipment' },
+                              { value: 'piling', label: 'Piling & Drilling' },
+                              { value: 'site_services', label: 'Site Services' },
+                              { value: 'surveying', label: 'Surveying & Engineering' },
+                              { value: 'shuttering', label: 'Shuttering & Formwork' },
+                              { value: 'suspended_ceilings', label: 'Suspended Ceilings' },
+                              { value: 'partitions', label: 'Partitions & Dividers' },
+                              { value: 'cladding', label: 'Cladding & Facades' },
+                              { value: 'fire_safety', label: 'Fire Safety & Protection' },
+                              { value: 'waterproofing', label: 'Waterproofing' },
+                              { value: 'excavation', label: 'Excavation & Earthworks' },
+                              { value: 'mechanical', label: 'Mechanical Services' },
+                              { value: 'shopfitting', label: 'Shopfitting & Joinery' },
+                              { value: 'signage', label: 'Signage & Graphics' },
+                              { value: 'flooring_industrial', label: 'Industrial Flooring' },
+                              { value: 'testing_inspection', label: 'Testing & Inspection' },
+                              { value: 'other', label: 'Other Services' },
+                            ].find((t) => t.value === formData.businessType)?.label
+                          }
+                        </span>
+                      </>
+                    ) : (
+                      <span className="text-base text-gray-400 font-medium">Select your primary trade or service</span>
+                    )}
+                  </div>
+                  <svg
+                    className={`w-5 h-5 text-gray-400 transition-transform duration-200 ${
+                      showBusinessTypeDropdown ? 'rotate-180' : ''
+                    }`}
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                  </svg>
+                </button>
+
+                {/* Dropdown List */}
+                {showBusinessTypeDropdown && (
+                  <div className="absolute z-50 w-full mt-2 bg-white border-2 border-primary/20 rounded-xl shadow-2xl max-h-[400px] overflow-y-auto">
+                    <div className="p-2">
+                      {[
+                        { value: 'plumbing', label: 'Plumbing & Heating', icon: '🔧' },
+                        { value: 'electrical', label: 'Electrical', icon: '⚡' },
+                        { value: 'building', label: 'Building & Construction', icon: '🏗️' },
+                        { value: 'roofing', label: 'Roofing', icon: '🏠' },
+                        { value: 'carpentry', label: 'Carpentry & Joinery', icon: '🪚' },
+                        { value: 'painting', label: 'Painting & Decorating', icon: '🎨' },
+                        { value: 'plastering', label: 'Plastering & Rendering', icon: '🧱' },
+                        { value: 'flooring', label: 'Flooring', icon: '🪵' },
+                        { value: 'tiling', label: 'Tiling', icon: '⬜' },
+                        { value: 'kitchen_bathroom', label: 'Kitchen & Bathroom', icon: '🚿' },
+                        { value: 'windows_doors', label: 'Windows & Doors', icon: '🪟' },
+                        { value: 'landscaping', label: 'Landscaping & Gardening', icon: '🌳' },
+                        { value: 'groundwork', label: 'Groundwork & Drainage', icon: '⛏️' },
+                        { value: 'driveways', label: 'Driveways & Paving', icon: '🚗' },
+                        { value: 'gas', label: 'Gas Services', icon: '🔥' },
+                        { value: 'hvac', label: 'HVAC & Air Conditioning', icon: '❄️' },
+                        { value: 'insulation', label: 'Insulation & Damp Proofing', icon: '🛡️' },
+                        { value: 'specialist', label: 'Specialist Services', icon: '🔬' },
+                        { value: 'demolition', label: 'Demolition & Clearance', icon: '🔨' },
+                        { value: 'scaffolding', label: 'Scaffolding', icon: '🏗️' },
+                        { value: 'security', label: 'Security & Alarms', icon: '🔒' },
+                        { value: 'solar', label: 'Solar & Renewable Energy', icon: '☀️' },
+                        { value: 'cleaning', label: 'Cleaning Services', icon: '✨' },
+                        { value: 'pest_control', label: 'Pest Control', icon: '🐛' },
+                        { value: 'handyman', label: 'Handyman Services', icon: '🔧' },
+                        { value: 'plant_hire', label: 'Plant Hire & Equipment', icon: '🚜' },
+                        { value: 'tool_hire', label: 'Tool Hire', icon: '🛠️' },
+                        { value: 'skip_hire', label: 'Skip Hire & Waste', icon: '🗑️' },
+                        { value: 'removals', label: 'Removals & Storage', icon: '📦' },
+                        { value: 'masonry', label: 'Masonry & Stonework', icon: '🧱' },
+                        { value: 'welding', label: 'Welding & Metalwork', icon: '⚙️' },
+                        { value: 'concrete', label: 'Concrete Services', icon: '🏗️' },
+                        { value: 'crane_lifting', label: 'Crane & Lifting Services', icon: '🏗️' },
+                        { value: 'access_equipment', label: 'Access Equipment', icon: '🪜' },
+                        { value: 'piling', label: 'Piling & Drilling', icon: '⬇️' },
+                        { value: 'site_services', label: 'Site Services', icon: '🚧' },
+                        { value: 'surveying', label: 'Surveying & Engineering', icon: '📐' },
+                        { value: 'shuttering', label: 'Shuttering & Formwork', icon: '📋' },
+                        { value: 'suspended_ceilings', label: 'Suspended Ceilings', icon: '▪️' },
+                        { value: 'partitions', label: 'Partitions & Dividers', icon: '▥' },
+                        { value: 'cladding', label: 'Cladding & Facades', icon: '🏢' },
+                        { value: 'fire_safety', label: 'Fire Safety & Protection', icon: '🧯' },
+                        { value: 'waterproofing', label: 'Waterproofing', icon: '💧' },
+                        { value: 'excavation', label: 'Excavation & Earthworks', icon: '⛏️' },
+                        { value: 'mechanical', label: 'Mechanical Services', icon: '⚙️' },
+                        { value: 'shopfitting', label: 'Shopfitting & Joinery', icon: '🏪' },
+                        { value: 'signage', label: 'Signage & Graphics', icon: '🪧' },
+                        { value: 'flooring_industrial', label: 'Industrial Flooring', icon: '🏭' },
+                        { value: 'testing_inspection', label: 'Testing & Inspection', icon: '📋' },
+                        { value: 'other', label: 'Other Services', icon: '⋯' },
+                      ].map((type) => (
+                        <button
+                          key={type.value}
+                          type="button"
+                          onClick={() => {
+                            updateFormData('businessType', type.value)
+                            setShowBusinessTypeDropdown(false)
+                          }}
+                          className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-all duration-150 ${
+                            formData.businessType === type.value
+                              ? 'bg-gradient-to-r from-primary/20 to-accent/20 text-primary font-semibold'
+                              : 'hover:bg-gray-50 text-gray-700'
+                          }`}
+                        >
+                          <span className="text-xl">{type.icon}</span>
+                          <span className="text-sm font-medium">{type.label}</span>
+                          {formData.businessType === type.value && (
+                            <svg className="w-5 h-5 ml-auto text-primary" fill="currentColor" viewBox="0 0 20 20">
+                              <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                            </svg>
+                          )}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
                 {errors.businessType && (
                   <p className="mt-2 text-sm text-red-500 font-medium">{errors.businessType}</p>
                 )}
