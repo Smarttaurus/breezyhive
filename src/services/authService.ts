@@ -18,6 +18,9 @@ export interface RegisterData {
 
   // Password
   password: string
+
+  // Marketing
+  agreeToMarketing?: boolean
 }
 
 export const authService = {
@@ -34,7 +37,7 @@ export const authService = {
           data: {
             first_name: data.firstName,
             last_name: data.lastName,
-            user_type: 'business',
+            user_type: 'enterprise',
           },
         },
       })
@@ -42,25 +45,49 @@ export const authService = {
       if (authError) throw authError
       if (!authData.user) throw new Error('Failed to create user')
 
-      // 2. Create business profile
-      // TODO: Insert into business_profiles table when schema is provided
-      // const { error: profileError } = await supabase
-      //   .from('business_profiles')
-      //   .insert({
-      //     user_id: authData.user.id,
-      //     business_name: data.businessName,
-      //     business_type: data.businessType,
-      //     company_size: data.companySize,
-      //     address: data.address,
-      //     city: data.city,
-      //     postcode: data.postcode,
-      //     first_name: data.firstName,
-      //     last_name: data.lastName,
-      //     phone: data.phone,
-      //     job_title: data.jobTitle,
-      //   })
+      // 2. Create tradesperson_profiles record (business owner)
+      const { error: tradespersonError } = await supabase
+        .from('tradesperson_profiles')
+        .insert({
+          user_id: authData.user.id,
+          business_name: data.businessName,
+          first_name: data.firstName,
+          last_name: data.lastName,
+          phone: data.phone,
+          trade: data.businessType,
+          country: 'GB',
+          is_enterprise_owner: true,
+          registered_via: 'website',
+        })
 
-      // if (profileError) throw profileError
+      if (tradespersonError) {
+        console.error('Tradesperson profile error:', tradespersonError)
+        throw new Error('Failed to create business profile')
+      }
+
+      // 3. Create enterprises record
+      const { error: enterpriseError } = await supabase
+        .from('enterprises')
+        .insert({
+          tradesperson_id: authData.user.id,
+          business_name: data.businessName,
+          address: data.address,
+          city: data.city,
+          postcode: data.postcode,
+          phone: data.phone,
+          email: data.email,
+          industry: data.businessType,
+          company_size: data.companySize,
+          job_title: data.jobTitle,
+          marketing_consent: data.agreeToMarketing || false,
+          country: 'GB',
+          registered_via: 'website',
+        })
+
+      if (enterpriseError) {
+        console.error('Enterprise error:', enterpriseError)
+        throw new Error('Failed to create enterprise account')
+      }
 
       return { user: authData.user, session: authData.session }
     } catch (error: any) {

@@ -143,12 +143,37 @@ export default function BusinessRegisterPage() {
 
     setIsLoading(true)
 
-    // TODO: Implement actual registration
-    setTimeout(() => {
-      console.log('Register with:', formData)
+    try {
+      // Import auth service dynamically
+      const { authService } = await import('@/services/authService')
+
+      // Register business
+      await authService.registerBusiness({
+        businessName: formData.businessName,
+        businessType: formData.businessType,
+        companySize: formData.companySize,
+        address: formData.address,
+        city: formData.city,
+        postcode: formData.postcode,
+        firstName: formData.firstName,
+        lastName: formData.lastName,
+        email: formData.email,
+        phone: formData.phone,
+        jobTitle: formData.jobTitle,
+        password: formData.password,
+        agreeToMarketing: formData.agreeToMarketing,
+      })
+
+      // Success! Redirect to success page or dashboard
+      alert('Registration successful! Please check your email to verify your account.')
+      // TODO: Redirect to dashboard or confirmation page
+      // window.location.href = '/dashboard'
+    } catch (error: any) {
+      console.error('Registration failed:', error)
+      setErrors({ email: error.message || 'Registration failed. Please try again.' })
+    } finally {
       setIsLoading(false)
-      // Redirect to dashboard or confirmation page
-    }, 1000)
+    }
   }
 
   const renderProgressBar = () => {
