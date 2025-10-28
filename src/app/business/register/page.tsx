@@ -762,12 +762,59 @@ export default function BusinessRegisterPage() {
                 </div>
               </div>
 
-              {/* Trial info */}
-              <div className="bg-primary/10 border border-primary/20 rounded-xl p-6">
-                <h3 className="font-semibold text-primary mb-2">14-Day Free Trial Included</h3>
-                <p className="text-sm text-gray-700">
-                  You'll get full access to all enterprise features for 14 days. No credit card required. Cancel anytime.
+              {/* Pricing info based on company size */}
+              <div className="bg-gradient-to-br from-primary/10 to-accent/10 border-2 border-primary/30 rounded-xl p-6">
+                <h3 className="font-bold text-primary text-lg mb-3">14-Day Free Trial Included</h3>
+                <p className="text-sm text-gray-800 mb-4">
+                  You'll get full access to all enterprise features for 14 days. Credit card required. We'll charge you after the trial ends, or you can cancel before then.
                 </p>
+
+                {/* Pricing based on company size */}
+                <div className="bg-white rounded-lg p-4 mt-4">
+                  <div className="flex items-center justify-between mb-3">
+                    <span className="text-sm font-medium text-gray-700">Your plan:</span>
+                    <span className="text-2xl font-bold text-primary">
+                      {formData.companySize === '1-10' && '£29.99'}
+                      {formData.companySize === '11-50' && '£49.99'}
+                      {formData.companySize === '51-200' && '£99.99'}
+                      {formData.companySize === '201-500' && '£159.99'}
+                      {formData.companySize === '500+' && 'Contact us'}
+                      {formData.companySize !== '500+' && <span className="text-sm font-normal text-gray-600">/month</span>}
+                    </span>
+                  </div>
+                  <div className="text-xs text-gray-600 space-y-1">
+                    <p>✓ {formData.companySize} employees plan</p>
+                    <p>✓ Billing starts after 14-day trial</p>
+                    <p>✓ Cancel anytime before trial ends</p>
+                  </div>
+                </div>
+
+                {/* All pricing tiers */}
+                <details className="mt-4">
+                  <summary className="text-xs text-gray-600 cursor-pointer hover:text-primary">View all pricing plans</summary>
+                  <div className="mt-3 space-y-2 text-xs text-gray-600">
+                    <div className="flex justify-between py-1">
+                      <span>1-10 employees</span>
+                      <span className="font-medium">£29.99/month</span>
+                    </div>
+                    <div className="flex justify-between py-1">
+                      <span>11-50 employees</span>
+                      <span className="font-medium">£49.99/month</span>
+                    </div>
+                    <div className="flex justify-between py-1">
+                      <span>51-200 employees</span>
+                      <span className="font-medium">£99.99/month</span>
+                    </div>
+                    <div className="flex justify-between py-1">
+                      <span>201-500 employees</span>
+                      <span className="font-medium">£159.99/month</span>
+                    </div>
+                    <div className="flex justify-between py-1">
+                      <span>500+ employees</span>
+                      <span className="font-medium">Contact us for pricing</span>
+                    </div>
+                  </div>
+                </details>
               </div>
 
               {/* Terms checkbox */}
