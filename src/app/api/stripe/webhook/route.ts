@@ -167,13 +167,15 @@ async function handleTrialWillEnd(subscription: Stripe.Subscription) {
 }
 
 async function handlePaymentSucceeded(invoice: Stripe.Invoice) {
-  if (invoice.subscription) {
+  const subscriptionId = typeof invoice.subscription === 'string' ? invoice.subscription : invoice.subscription?.id
+
+  if (subscriptionId) {
     const { error } = await supabase
       .from('enterprises')
       .update({
         last_payment_at: new Date().toISOString(),
       })
-      .eq('stripe_subscription_id', invoice.subscription as string)
+      .eq('stripe_subscription_id', subscriptionId)
 
     if (error) {
       console.error('Failed to update last payment date:', error)
@@ -182,19 +184,21 @@ async function handlePaymentSucceeded(invoice: Stripe.Invoice) {
 }
 
 async function handlePaymentFailed(invoice: Stripe.Invoice) {
-  if (invoice.subscription) {
+  const subscriptionId = typeof invoice.subscription === 'string' ? invoice.subscription : invoice.subscription?.id
+
+  if (subscriptionId) {
     const { error } = await supabase
       .from('enterprises')
       .update({
         subscription_status: 'past_due',
       })
-      .eq('stripe_subscription_id', invoice.subscription as string)
+      .eq('stripe_subscription_id', subscriptionId)
 
     if (error) {
       console.error('Failed to update subscription status:', error)
     }
 
     // TODO: Send email notification about failed payment
-    console.log(`Payment failed for subscription ${invoice.subscription}`)
+    console.log(`Payment failed for subscription ${subscriptionId}`)
   }
 }
