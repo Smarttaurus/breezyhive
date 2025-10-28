@@ -18,6 +18,12 @@ interface EnterpriseData {
   country: string
   is_active: boolean
   created_at: string
+  stripe_customer_id?: string
+  stripe_subscription_id?: string
+  subscription_status?: 'trialing' | 'active' | 'past_due' | 'canceled' | 'incomplete'
+  trial_ends_at?: string
+  canceled_at?: string
+  last_payment_at?: string
 }
 
 interface Employee {
@@ -147,6 +153,71 @@ export default function DashboardPage() {
           <h2 className="text-3xl font-bold text-gray-900">Welcome back! 👋</h2>
           <p className="mt-2 text-gray-600">Here's what's happening with your business today.</p>
         </div>
+
+        {/* Subscription Status Banner */}
+        {enterprise && (
+          <div className={`rounded-xl shadow-sm p-6 border-2 mb-8 ${
+            enterprise.subscription_status === 'trialing'
+              ? 'bg-blue-50 border-blue-200'
+              : enterprise.subscription_status === 'active'
+              ? 'bg-green-50 border-green-200'
+              : enterprise.subscription_status === 'past_due'
+              ? 'bg-red-50 border-red-200'
+              : enterprise.subscription_status === 'canceled'
+              ? 'bg-gray-50 border-gray-200'
+              : 'bg-yellow-50 border-yellow-200'
+          }`}>
+            <div className="flex items-center justify-between">
+              <div>
+                <div className="flex items-center gap-2 mb-2">
+                  <span className="text-2xl">
+                    {enterprise.subscription_status === 'trialing' && '🎁'}
+                    {enterprise.subscription_status === 'active' && '✅'}
+                    {enterprise.subscription_status === 'past_due' && '⚠️'}
+                    {enterprise.subscription_status === 'canceled' && '❌'}
+                    {!enterprise.subscription_status && '⏳'}
+                  </span>
+                  <h3 className="text-xl font-bold text-gray-900">
+                    {enterprise.subscription_status === 'trialing' && 'Free Trial Active'}
+                    {enterprise.subscription_status === 'active' && 'Subscription Active'}
+                    {enterprise.subscription_status === 'past_due' && 'Payment Required'}
+                    {enterprise.subscription_status === 'canceled' && 'Subscription Canceled'}
+                    {!enterprise.subscription_status && 'Set Up Payment'}
+                  </h3>
+                </div>
+                <p className="text-sm text-gray-700">
+                  {enterprise.subscription_status === 'trialing' && enterprise.trial_ends_at && (
+                    <>Your free trial ends on {new Date(enterprise.trial_ends_at).toLocaleDateString()}. No charges until then.</>
+                  )}
+                  {enterprise.subscription_status === 'active' && (
+                    <>Your subscription is active. Next billing date: {enterprise.last_payment_at ? new Date(new Date(enterprise.last_payment_at).getTime() + 30 * 24 * 60 * 60 * 1000).toLocaleDateString() : 'N/A'}</>
+                  )}
+                  {enterprise.subscription_status === 'past_due' && (
+                    <>Your payment failed. Please update your payment method to continue using BreezyHive.</>
+                  )}
+                  {enterprise.subscription_status === 'canceled' && (
+                    <>Your subscription was canceled. Renew to continue accessing enterprise features.</>
+                  )}
+                  {!enterprise.subscription_status && (
+                    <>Complete your payment setup to activate your 14-day free trial.</>
+                  )}
+                </p>
+              </div>
+              <div>
+                {(enterprise.subscription_status === 'past_due' || enterprise.subscription_status === 'canceled' || !enterprise.subscription_status) && (
+                  <button className="px-6 py-3 bg-primary text-white rounded-lg font-semibold hover:bg-primary-dark transition">
+                    {!enterprise.subscription_status ? 'Complete Setup' : 'Update Payment'}
+                  </button>
+                )}
+                {(enterprise.subscription_status === 'trialing' || enterprise.subscription_status === 'active') && (
+                  <button className="px-6 py-3 bg-white border-2 border-gray-300 text-gray-700 rounded-lg font-semibold hover:bg-gray-50 transition">
+                    Manage Subscription
+                  </button>
+                )}
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* Stats Cards */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">

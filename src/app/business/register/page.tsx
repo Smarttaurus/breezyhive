@@ -164,8 +164,37 @@ export default function BusinessRegisterPage() {
         agreeToMarketing: formData.agreeToMarketing,
       })
 
-      // Success! Redirect to dashboard
-      window.location.href = '/dashboard'
+      // Handle 500+ company size (contact us)
+      if (formData.companySize === '500+') {
+        alert('Thank you for registering! Our team will contact you shortly to set up your enterprise plan.')
+        window.location.href = '/dashboard'
+        return
+      }
+
+      // Create Stripe Checkout session
+      const response = await fetch('/api/stripe/create-checkout-session', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          companySize: formData.companySize,
+          customerId: result.user.id,
+          customerEmail: formData.email,
+          trialDays: 14,
+        }),
+      })
+
+      const data = await response.json()
+
+      if (!response.ok) {
+        throw new Error(data.error || 'Failed to create checkout session')
+      }
+
+      // Redirect to Stripe Checkout
+      if (data.url) {
+        window.location.href = data.url
+      }
     } catch (error: any) {
       console.error('Registration failed:', error)
 
