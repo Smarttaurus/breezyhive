@@ -148,7 +148,7 @@ export default function BusinessRegisterPage() {
       const { authService } = await import('@/services/authService')
 
       // Register business
-      await authService.registerBusiness({
+      const result = await authService.registerBusiness({
         businessName: formData.businessName,
         businessType: formData.businessType,
         companySize: formData.companySize,
@@ -164,13 +164,26 @@ export default function BusinessRegisterPage() {
         agreeToMarketing: formData.agreeToMarketing,
       })
 
-      // Success! Redirect to success page or dashboard
-      alert('Registration successful! Please check your email to verify your account.')
-      // TODO: Redirect to dashboard or confirmation page
-      // window.location.href = '/dashboard'
+      // Success! Redirect to dashboard
+      window.location.href = '/dashboard'
     } catch (error: any) {
       console.error('Registration failed:', error)
-      setErrors({ email: error.message || 'Registration failed. Please try again.' })
+
+      // Show user-friendly error message
+      let errorMessage = 'Registration failed. Please try again.'
+
+      if (error.message?.includes('already registered') || error.message?.includes('already exists')) {
+        errorMessage = 'This email is already registered. Please sign in instead.'
+      } else if (error.message?.includes('Missing Supabase') || error.message?.includes('environment')) {
+        errorMessage = 'Service temporarily unavailable. Please try again later.'
+      } else if (error.message) {
+        errorMessage = error.message
+      }
+
+      setErrors({ email: errorMessage })
+
+      // Scroll to top to show error
+      window.scrollTo({ top: 0, behavior: 'smooth' })
     } finally {
       setIsLoading(false)
     }
@@ -858,6 +871,15 @@ export default function BusinessRegisterPage() {
                   </label>
                 </div>
               </div>
+
+              {/* Show general error if any */}
+              {Object.keys(errors).length > 0 && (
+                <div className="bg-red-50 border-2 border-red-200 rounded-xl p-4">
+                  <p className="text-sm text-red-700 font-medium">
+                    Please fix the errors above before continuing
+                  </p>
+                </div>
+              )}
 
               <div className="flex gap-4">
                 <Button onClick={handleBack} variant="secondary" size="lg" className="flex-1">
