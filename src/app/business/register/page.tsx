@@ -33,6 +33,7 @@ type FormData = {
 
 export default function BusinessRegisterPage() {
   const [step, setStep] = useState(1)
+  // Force redeployment - premium UI with card-based selection
   const [formData, setFormData] = useState<FormData>({
     businessName: '',
     businessType: 'construction',
