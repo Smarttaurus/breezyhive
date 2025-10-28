@@ -23,7 +23,7 @@ export default function BusinessPage() {
               Complete employee management solution for tradespeople and contractors. Track time, manage expenses, assign jobs, and streamline your business operations.
             </p>
             <div className="flex gap-4 justify-center flex-wrap animate-slide-up">
-              <Button href="/business/register" size="lg">
+              <Button href="https://enterprise.breezyhive.com/register" size="lg">
                 Start Free Trial
               </Button>
               <Button href="#features" variant="secondary" size="lg">
@@ -293,7 +293,7 @@ export default function BusinessPage() {
                   </li>
                 </ul>
 
-                <Button href="/business/register" size="lg" className="w-full mb-4">
+                <Button href="https://enterprise.breezyhive.com/register" size="lg" className="w-full mb-4">
                   Start 14-Day Free Trial
                 </Button>
 
@@ -422,7 +422,7 @@ export default function BusinessPage() {
           <p className="text-xl mb-8 opacity-90">
             Join hundreds of contractors saving time and money with BreezyHive
           </p>
-          <Button href="/business/register" variant="secondary" size="lg">
+          <Button href="https://enterprise.breezyhive.com/register" variant="secondary" size="lg">
             Start Your Free Trial
           </Button>
           <p className="mt-6 text-sm opacity-75">

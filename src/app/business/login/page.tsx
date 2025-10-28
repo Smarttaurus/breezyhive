@@ -114,7 +114,7 @@ export default function BusinessLoginPage() {
           <div className="mt-6 text-center">
             <p className="text-gray-600">
               Don't have an account?{' '}
-              <Link href="/business/register" className="text-primary hover:text-primary-dark font-semibold">
+              <Link href="/register" className="text-primary hover:text-primary-dark font-semibold">
                 Start Free Trial
               </Link>
             </p>
