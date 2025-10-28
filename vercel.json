@@ -33,6 +33,28 @@
   ],
   "redirects": [
     {
+      "source": "/login",
+      "destination": "https://enterprise.breezyhive.com/login",
+      "permanent": false,
+      "has": [
+        {
+          "type": "host",
+          "value": "breezyhive.com"
+        }
+      ]
+    },
+    {
+      "source": "/register",
+      "destination": "https://enterprise.breezyhive.com/register",
+      "permanent": false,
+      "has": [
+        {
+          "type": "host",
+          "value": "breezyhive.com"
+        }
+      ]
+    },
+    {
       "source": "/business/login",
       "destination": "https://enterprise.breezyhive.com/login",
       "permanent": false,
