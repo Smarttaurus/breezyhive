@@ -29,6 +29,8 @@ export const authService = {
    */
   async registerBusiness(data: RegisterData) {
     try {
+      console.log('Starting registration for:', data.email)
+
       // 1. Create auth user
       const { data: authData, error: authError } = await supabase.auth.signUp({
         email: data.email,
@@ -42,7 +44,12 @@ export const authService = {
         },
       })
 
-      if (authError) throw authError
+      console.log('Auth response:', { authData, authError })
+
+      if (authError) {
+        console.error('Auth error details:', JSON.stringify(authError, null, 2))
+        throw authError
+      }
       if (!authData.user) throw new Error('Failed to create user')
 
       // 2. Create tradesperson_profiles record (business owner)
