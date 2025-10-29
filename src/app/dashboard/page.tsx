@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react'
 import { supabase } from '@/lib/supabase'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
+import AddEmployeeModal from '@/components/AddEmployeeModal'
 
 interface EnterpriseData {
   id: string
@@ -476,20 +477,19 @@ export default function DashboardPage() {
         </div>
       </main>
 
-      {/* Add Employee Modal - Coming Soon */}
-      {showAddEmployee && (
-        <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-          <div className="bg-gradient-to-br from-gray-900 to-gray-800 rounded-3xl p-8 max-w-md w-full border border-white/10 shadow-2xl">
-            <h3 className="text-2xl font-black text-white mb-4">Add Employee</h3>
-            <p className="text-gray-400 mb-6">This feature is coming soon! You'll be able to add and manage employees directly from here.</p>
-            <button
-              onClick={() => setShowAddEmployee(false)}
-              className="w-full px-6 py-4 bg-gradient-to-r from-primary to-accent text-white rounded-xl font-bold hover:shadow-xl transition-all"
-            >
-              Got It
-            </button>
-          </div>
-        </div>
+      {/* Add Employee Modal */}
+      {showAddEmployee && enterprise && (
+        <AddEmployeeModal
+          enterpriseId={enterprise.id}
+          onClose={() => setShowAddEmployee(false)}
+          onSuccess={async () => {
+            // Reload dashboard data to show new employee
+            const { data: { user } } = await supabase.auth.getUser()
+            if (user) {
+              await loadDashboardData(user.id)
+            }
+          }}
+        />
       )}
     </div>
   )
