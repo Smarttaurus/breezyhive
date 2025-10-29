@@ -1,12 +1,16 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
+import { useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import BeeIcon from '@/components/BeeIcon'
 import Input from '@/components/Input'
 import Button from '@/components/Button'
 
 export default function BusinessLoginPage() {
+  const searchParams = useSearchParams()
+  const redirectTo = searchParams.get('redirectTo') || '/dashboard'
+
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [errors, setErrors] = useState<{ email?: string; password?: string }>({})
@@ -40,12 +44,29 @@ export default function BusinessLoginPage() {
 
     setIsLoading(true)
 
-    // TODO: Implement actual authentication
-    setTimeout(() => {
-      console.log('Login with:', { email, password })
+    try {
+      // Import authService dynamically to avoid SSR issues
+      const { authService } = await import('@/services/authService')
+
+      const result = await authService.signIn(email, password)
+
+      if (result.error) {
+        setErrors({
+          email: result.error.message || 'Invalid email or password'
+        })
+        setIsLoading(false)
+        return
+      }
+
+      // Successful login - redirect to intended destination
+      window.location.href = redirectTo
+    } catch (error) {
+      console.error('Login error:', error)
+      setErrors({
+        email: 'An error occurred during login. Please try again.'
+      })
       setIsLoading(false)
-      // Redirect to dashboard
-    }, 1000)
+    }
   }
 
   return (
