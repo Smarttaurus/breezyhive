@@ -62,7 +62,8 @@ export const authService = {
 
       if (tradespersonError) {
         console.error('Tradesperson profile error:', tradespersonError)
-        throw new Error('Failed to create business profile')
+        console.error('Full error details:', JSON.stringify(tradespersonError, null, 2))
+        throw new Error(`Failed to create business profile: ${tradespersonError.message || tradespersonError.code}`)
       }
 
       // 3. Create enterprises record
@@ -86,7 +87,8 @@ export const authService = {
 
       if (enterpriseError) {
         console.error('Enterprise error:', enterpriseError)
-        throw new Error('Failed to create enterprise account')
+        console.error('Full error details:', JSON.stringify(enterpriseError, null, 2))
+        throw new Error(`Failed to create enterprise account: ${enterpriseError.message || enterpriseError.code}`)
       }
 
       return { user: authData.user, session: authData.session }
