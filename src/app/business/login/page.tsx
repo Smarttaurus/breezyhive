@@ -48,22 +48,14 @@ export default function BusinessLoginPage() {
       // Import authService dynamically to avoid SSR issues
       const { authService } = await import('@/services/authService')
 
-      const result = await authService.signIn(email, password)
-
-      if (result.error) {
-        setErrors({
-          email: result.error.message || 'Invalid email or password'
-        })
-        setIsLoading(false)
-        return
-      }
+      await authService.signIn(email, password)
 
       // Successful login - redirect to intended destination
       window.location.href = redirectTo
-    } catch (error) {
+    } catch (error: any) {
       console.error('Login error:', error)
       setErrors({
-        email: 'An error occurred during login. Please try again.'
+        email: error.message || 'Invalid email or password. Please try again.'
       })
       setIsLoading(false)
     }
