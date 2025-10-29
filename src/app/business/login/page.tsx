@@ -1,13 +1,14 @@
 'use client'
 
 import { useState, Suspense } from 'react'
-import { useSearchParams } from 'next/navigation'
+import { useSearchParams, useRouter } from 'next/navigation'
 import Link from 'next/link'
 import BeeIcon from '@/components/BeeIcon'
 import Input from '@/components/Input'
 import Button from '@/components/Button'
 
 function LoginForm() {
+  const router = useRouter()
   const searchParams = useSearchParams()
   const redirectTo = searchParams.get('redirectTo') || '/dashboard'
 
@@ -48,10 +49,16 @@ function LoginForm() {
       // Import authService dynamically to avoid SSR issues
       const { authService } = await import('@/services/authService')
 
-      await authService.signIn(email, password)
+      const result = await authService.signIn(email, password)
 
-      // Successful login - redirect to intended destination
-      window.location.href = redirectTo
+      console.log('Login successful:', result.user.email)
+
+      // Small delay to ensure session is established
+      await new Promise(resolve => setTimeout(resolve, 300))
+
+      // Successful login - redirect to intended destination using router
+      router.push(redirectTo)
+      router.refresh()
     } catch (error: any) {
       console.error('Login error:', error)
       setErrors({
