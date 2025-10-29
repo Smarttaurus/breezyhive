@@ -171,11 +171,17 @@ export default function BusinessRegisterPage() {
         return
       }
 
-      // Create Stripe Checkout session
-      const response = await fetch('/api/stripe/create-checkout-session', {
+      // Create Stripe Checkout session via Supabase Edge Function
+      // Import supabase to get session token
+      const { supabase } = await import('@/lib/supabase')
+      const { data: { session } } = await supabase.auth.getSession()
+
+      const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
+      const response = await fetch(`${supabaseUrl}/functions/v1/create-checkout-session`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          'Authorization': `Bearer ${session?.access_token || ''}`,
         },
         body: JSON.stringify({
           companySize: formData.companySize,
