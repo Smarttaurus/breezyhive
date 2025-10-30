@@ -13,7 +13,8 @@ serve(async (req) => {
   }
 
   try {
-    // Create Supabase client with SERVICE ROLE key (bypasses RLS)
+    // Create TWO separate Supabase clients:
+    // 1. Admin client with SERVICE ROLE key (bypasses RLS)
     const supabaseAdmin = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '',
@@ -25,17 +26,28 @@ serve(async (req) => {
       }
     )
 
-    // Get the user making the request
+    // 2. User client to verify the requester (uses their token)
     const authHeader = req.headers.get('Authorization')!
     const token = authHeader.replace('Bearer ', '')
 
-    const { data: { user }, error: userError } = await supabaseAdmin.auth.getUser(token)
+    const supabaseUser = createClient(
+      Deno.env.get('SUPABASE_URL') ?? '',
+      Deno.env.get('SUPABASE_ANON_KEY') ?? '',
+      {
+        global: {
+          headers: { Authorization: authHeader }
+        }
+      }
+    )
+
+    const { data: { user }, error: userError } = await supabaseUser.auth.getUser()
 
     if (userError || !user) {
       throw new Error('Unauthorized')
     }
 
     console.log('Request from user:', user.id)
+    console.log('Using service role key:', Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')?.substring(0, 10) + '...')
 
     // Get request body
     const {

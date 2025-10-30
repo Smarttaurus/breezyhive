@@ -113,6 +113,8 @@ export default function AddEmployeeModal({ enterpriseId, onClose, onSuccess }: A
 
       // Call the edge function to create employee (bypasses RLS issues)
       const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
+      console.log('Calling edge function at:', `${supabaseUrl}/functions/v1/create-employee`)
+
       const response = await fetch(`${supabaseUrl}/functions/v1/create-employee`, {
         method: 'POST',
         headers: {
