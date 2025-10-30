@@ -103,52 +103,44 @@ export default function AddEmployeeModal({ enterpriseId, onClose, onSuccess }: A
     setErrors({})
 
     try {
-      console.log('Step 1: Creating Supabase auth user...')
+      console.log('Calling create-employee edge function...')
 
-      // 1. Create auth user for the employee
-      const { data: authData, error: authError } = await supabase.auth.signUp({
-        email: formData.email,
-        password: formData.password,
-        options: {
-          data: {
-            first_name: formData.firstName,
-            last_name: formData.lastName,
-            user_type: 'enterprise_employee',
-          },
-          emailRedirectTo: `${window.location.origin}/employee/verify`,
+      // Get the current user's session token
+      const { data: { session } } = await supabase.auth.getSession()
+      if (!session) {
+        throw new Error('You must be logged in to create employees')
+      }
+
+      // Call the edge function to create employee (bypasses RLS issues)
+      const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
+      const response = await fetch(`${supabaseUrl}/functions/v1/create-employee`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${session.access_token}`,
         },
+        body: JSON.stringify({
+          enterpriseId,
+          firstName: formData.firstName,
+          lastName: formData.lastName,
+          email: formData.email,
+          phone: formData.phone,
+          password: formData.password,
+          role: formData.role,
+          employmentType: formData.employmentType,
+          hourlyRate: formData.hourlyRate,
+          hireDate: formData.hireDate,
+          canCreateJobs: formData.canCreateJobs,
+          canViewAllJobs: formData.canViewAllJobs,
+          canApproveExpenses: formData.canApproveExpenses,
+        }),
       })
 
-      console.log('Auth response:', { authData, authError })
+      const result = await response.json()
+      console.log('Edge function response:', result)
 
-      if (authError) throw authError
-      if (!authData.user) throw new Error('Failed to create user')
-
-      console.log('Step 2: Creating employee record...')
-
-      // 2. Create employee record in enterprise_employees table
-      const { error: employeeError } = await supabase
-        .from('enterprise_employees')
-        .insert({
-          enterprise_id: enterpriseId,
-          user_id: authData.user.id,
-          first_name: formData.firstName,
-          last_name: formData.lastName,
-          email: formData.email,
-          phone: formData.phone || null,
-          role: formData.role,
-          employment_type: formData.employmentType,
-          hourly_rate: formData.hourlyRate ? parseFloat(formData.hourlyRate) : null,
-          hire_date: formData.hireDate,
-          can_create_jobs: formData.canCreateJobs,
-          can_view_all_jobs: formData.canViewAllJobs,
-          can_approve_expenses: formData.canApproveExpenses,
-          is_active: true,
-        })
-
-      if (employeeError) {
-        console.error('Employee record creation failed:', employeeError)
-        throw employeeError
+      if (!response.ok) {
+        throw new Error(result.error || 'Failed to create employee')
       }
 
       console.log('✅ Employee created successfully!')
