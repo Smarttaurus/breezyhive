@@ -177,6 +177,8 @@ export default function AddEmployeeModal({ enterpriseId, onClose, onSuccess }: A
         errorMessage = error.message
       }
 
+      // Go back to step 1 to show the error
+      setStep(1)
       setErrors({
         email: errorMessage
       })
