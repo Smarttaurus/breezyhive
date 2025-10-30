@@ -85,6 +85,7 @@ export default function AddEmployeeModal({ enterpriseId, onClose, onSuccess }: A
 
   const handleNext = () => {
     if (step === 1 && validateStep1()) {
+      setErrors({}) // Clear any previous errors when moving to step 2
       setStep(2)
     }
   }
@@ -470,7 +471,10 @@ export default function AddEmployeeModal({ enterpriseId, onClose, onSuccess }: A
               <>
                 <button
                   type="button"
-                  onClick={() => setStep(1)}
+                  onClick={() => {
+                    setErrors({}) // Clear errors when going back
+                    setStep(1)
+                  }}
                   className="px-8 py-3 bg-white/5 hover:bg-white/10 text-white rounded-xl font-semibold transition-all border border-white/10"
                 >
                   ← Back
