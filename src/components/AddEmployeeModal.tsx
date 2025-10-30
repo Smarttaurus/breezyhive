@@ -45,6 +45,7 @@ export default function AddEmployeeModal({ enterpriseId, onClose, onSuccess }: A
   const [errors, setErrors] = useState<Partial<Record<keyof EmployeeFormData, string>>>({})
   const [isLoading, setIsLoading] = useState(false)
   const [step, setStep] = useState(1) // Multi-step form
+  const [justChangedStep, setJustChangedStep] = useState(false) // Prevent auto-submit after step change
 
   const validateStep1 = () => {
     const newErrors: Partial<Record<keyof EmployeeFormData, string>> = {}
@@ -88,7 +89,14 @@ export default function AddEmployeeModal({ enterpriseId, onClose, onSuccess }: A
     if (step === 1 && validateStep1()) {
       console.log('✅ Validation passed, moving to step 2')
       setErrors({}) // Clear any previous errors when moving to step 2
+      setJustChangedStep(true)
       setStep(2)
+
+      // Clear the flag after a short delay to allow user to interact with step 2
+      setTimeout(() => {
+        setJustChangedStep(false)
+        console.log('🔓 Step change cooldown ended - can now submit')
+      }, 500)
     } else {
       console.log('❌ Validation failed or not on step 1')
     }
@@ -100,6 +108,12 @@ export default function AddEmployeeModal({ enterpriseId, onClose, onSuccess }: A
     // CRITICAL: Only allow submission on step 2
     if (step !== 2) {
       console.log('❌ Blocked submission - not on step 2. Current step:', step)
+      return
+    }
+
+    // CRITICAL: Prevent auto-submit immediately after changing to step 2
+    if (justChangedStep) {
+      console.log('❌ Blocked submission - step just changed, cooldown active')
       return
     }
 
@@ -248,12 +262,22 @@ export default function AddEmployeeModal({ enterpriseId, onClose, onSuccess }: A
 
         {/* Form */}
         <form
-          onSubmit={step === 2 ? handleSubmit : (e) => e.preventDefault()}
+          onSubmit={(e) => {
+            e.preventDefault()
+            console.log('⚠️ Form submit triggered')
+            if (step === 2) {
+              handleSubmit(e)
+            } else {
+              console.log('🚫 Form submit blocked - not on step 2')
+            }
+          }}
           onKeyDown={(e) => {
-            // Prevent Enter key from submitting the form
+            // Completely prevent Enter key from doing anything in the form
             if (e.key === 'Enter') {
               e.preventDefault()
+              e.stopPropagation()
               console.log('🚫 Enter key blocked to prevent auto-submission')
+              return false
             }
           }}
           className="p-8"
