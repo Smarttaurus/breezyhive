@@ -79,16 +79,16 @@ serve(async (req) => {
     const { data: job, error: jobError } = await supabaseAdmin
       .from('jobs')
       .insert({
-        enterprise_id: enterpriseId,
+        customer_id: user.id, // Using user as customer for now
         title: title,
         description: description,
-        location: location,
+        location_address: location,
         status: status || 'pending',
-        priority: priority || 'medium',
-        due_date: dueDate,
-        estimated_hours: estimatedHours,
-        budget: budget,
-        notes: notes,
+        urgency: priority || 'medium',
+        start_date: dueDate,
+        expected_duration: estimatedHours ? `${estimatedHours} hours` : null,
+        budget_min: budget ? parseFloat(budget) : null,
+        budget_max: budget ? parseFloat(budget) : null,
       })
       .select()
       .single()
