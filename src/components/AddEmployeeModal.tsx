@@ -84,14 +84,24 @@ export default function AddEmployeeModal({ enterpriseId, onClose, onSuccess }: A
   }
 
   const handleNext = () => {
+    console.log('📍 handleNext called, current step:', step)
     if (step === 1 && validateStep1()) {
+      console.log('✅ Validation passed, moving to step 2')
       setErrors({}) // Clear any previous errors when moving to step 2
       setStep(2)
+    } else {
+      console.log('❌ Validation failed or not on step 1')
     }
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
+
+    // CRITICAL: Only allow submission on step 2
+    if (step !== 2) {
+      console.log('❌ Blocked submission - not on step 2. Current step:', step)
+      return
+    }
 
     console.log('Creating employee with data:', formData)
 
