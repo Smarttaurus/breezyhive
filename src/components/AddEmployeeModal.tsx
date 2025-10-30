@@ -179,10 +179,12 @@ export default function AddEmployeeModal({ enterpriseId, onClose, onSuccess }: A
       }
 
       // Go back to step 1 to show the error
-      setStep(1)
-      setErrors({
-        email: errorMessage
-      })
+      setTimeout(() => {
+        setStep(1)
+        setErrors({
+          email: errorMessage
+        })
+      }, 100)
     } finally {
       setIsLoading(false)
     }
@@ -235,7 +237,7 @@ export default function AddEmployeeModal({ enterpriseId, onClose, onSuccess }: A
         </div>
 
         {/* Form */}
-        <form onSubmit={handleSubmit} className="p-8">
+        <form onSubmit={step === 2 ? handleSubmit : (e) => e.preventDefault()} className="p-8">
           {step === 1 && (
             <div className="space-y-6">
               <div className="grid grid-cols-2 gap-6">
