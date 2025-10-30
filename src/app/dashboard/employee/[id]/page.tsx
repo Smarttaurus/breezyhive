@@ -122,7 +122,7 @@ export default function EmployeeDetailsPage() {
           id,
           assigned_at,
           completed_at,
-          jobs (
+          jobs:job_id (
             id,
             title,
             status
@@ -133,7 +133,7 @@ export default function EmployeeDetailsPage() {
         .limit(50)
 
       if (!jobsError && jobsData) {
-        setJobAssignments(jobsData.map(item => ({
+        setJobAssignments(jobsData.map((item: any) => ({
           id: item.id,
           job_title: item.jobs?.title || 'Unknown Job',
           job_status: item.jobs?.status || 'unknown',
