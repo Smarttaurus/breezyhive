@@ -180,8 +180,6 @@ export default function AddEmployeeModal({ enterpriseId, onClose, onSuccess }: A
       setErrors({
         email: errorMessage
       })
-
-      alert(`Error: ${errorMessage}`)
     } finally {
       setIsLoading(false)
     }
