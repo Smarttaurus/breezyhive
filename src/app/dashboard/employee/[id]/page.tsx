@@ -205,6 +205,60 @@ export default function EmployeeDetailsPage() {
     return `${hours.toFixed(2)} hours`
   }
 
+  // Calculate hours worked
+  const calculateHoursInRange = (entries: TimeEntry[], startDate: Date, endDate: Date) => {
+    return entries
+      .filter(entry => {
+        const clockIn = new Date(entry.clock_in_time)
+        return clockIn >= startDate && clockIn <= endDate && entry.clock_out_time
+      })
+      .reduce((total, entry) => {
+        const clockIn = new Date(entry.clock_in_time)
+        const clockOut = new Date(entry.clock_out_time!)
+        const hours = (clockOut.getTime() - clockIn.getTime()) / (1000 * 60 * 60)
+        return total + hours
+      }, 0)
+  }
+
+  // Get time ranges
+  const today = new Date()
+  const startOfWeek = new Date(today)
+  startOfWeek.setDate(today.getDate() - today.getDay()) // Sunday
+  startOfWeek.setHours(0, 0, 0, 0)
+
+  const endOfWeek = new Date(startOfWeek)
+  endOfWeek.setDate(startOfWeek.getDate() + 7)
+
+  const startOfMonth = new Date(today.getFullYear(), today.getMonth(), 1)
+  const endOfMonth = new Date(today.getFullYear(), today.getMonth() + 1, 0)
+
+  const startOfToday = new Date(today)
+  startOfToday.setHours(0, 0, 0, 0)
+  const endOfToday = new Date(today)
+  endOfToday.setHours(23, 59, 59, 999)
+
+  // Calculate totals
+  const hoursToday = calculateHoursInRange(timeEntries, startOfToday, endOfToday)
+  const hoursThisWeek = calculateHoursInRange(timeEntries, startOfWeek, endOfWeek)
+  const hoursThisMonth = calculateHoursInRange(timeEntries, startOfMonth, endOfMonth)
+
+  // Calculate total all time
+  const totalHoursAllTime = timeEntries
+    .filter(entry => entry.clock_out_time)
+    .reduce((total, entry) => {
+      const clockIn = new Date(entry.clock_in_time)
+      const clockOut = new Date(entry.clock_out_time!)
+      const hours = (clockOut.getTime() - clockIn.getTime()) / (1000 * 60 * 60)
+      return total + hours
+    }, 0)
+
+  // Calculate earnings
+  const hourlyRate = employee?.hourly_rate || 0
+  const earningsToday = hoursToday * hourlyRate
+  const earningsThisWeek = hoursThisWeek * hourlyRate
+  const earningsThisMonth = hoursThisMonth * hourlyRate
+  const earningsAllTime = totalHoursAllTime * hourlyRate
+
   if (loading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 flex items-center justify-center">
@@ -638,6 +692,87 @@ export default function EmployeeDetailsPage() {
 
           {/* Right Column - Statistics */}
           <div className="space-y-8">
+            {/* Hours Worked & Earnings */}
+            <div className="bg-gradient-to-br from-green-600/10 via-green-500/5 to-transparent backdrop-blur-sm border border-green-500/20 rounded-3xl p-8">
+              <h2 className="text-xl font-bold text-white mb-6 flex items-center gap-2">
+                <span className="text-2xl">💰</span>
+                Hours & Earnings
+              </h2>
+              <div className="space-y-6">
+                {/* Today */}
+                <div className="bg-white/5 rounded-xl p-4 border border-white/10">
+                  <p className="text-sm text-gray-400 mb-3">Today</p>
+                  <div className="flex items-end justify-between">
+                    <div>
+                      <p className="text-2xl font-black text-white">{hoursToday.toFixed(2)}h</p>
+                      <p className="text-xs text-gray-500 mt-1">hours worked</p>
+                    </div>
+                    {hourlyRate > 0 && (
+                      <div className="text-right">
+                        <p className="text-xl font-bold text-green-400">£{earningsToday.toFixed(2)}</p>
+                        <p className="text-xs text-gray-500 mt-1">earned</p>
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                {/* This Week */}
+                <div className="bg-white/5 rounded-xl p-4 border border-white/10">
+                  <p className="text-sm text-gray-400 mb-3">This Week</p>
+                  <div className="flex items-end justify-between">
+                    <div>
+                      <p className="text-2xl font-black text-white">{hoursThisWeek.toFixed(2)}h</p>
+                      <p className="text-xs text-gray-500 mt-1">hours worked</p>
+                    </div>
+                    {hourlyRate > 0 && (
+                      <div className="text-right">
+                        <p className="text-xl font-bold text-green-400">£{earningsThisWeek.toFixed(2)}</p>
+                        <p className="text-xs text-gray-500 mt-1">earned</p>
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                {/* This Month */}
+                <div className="bg-white/5 rounded-xl p-4 border border-white/10">
+                  <p className="text-sm text-gray-400 mb-3">This Month</p>
+                  <div className="flex items-end justify-between">
+                    <div>
+                      <p className="text-2xl font-black text-white">{hoursThisMonth.toFixed(2)}h</p>
+                      <p className="text-xs text-gray-500 mt-1">hours worked</p>
+                    </div>
+                    {hourlyRate > 0 && (
+                      <div className="text-right">
+                        <p className="text-xl font-bold text-green-400">£{earningsThisMonth.toFixed(2)}</p>
+                        <p className="text-xs text-gray-500 mt-1">earned</p>
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                {/* All Time */}
+                <div className="bg-gradient-to-br from-primary/20 to-accent/20 rounded-xl p-4 border border-primary/30">
+                  <p className="text-sm text-gray-400 mb-3">All Time Total</p>
+                  <div className="flex items-end justify-between">
+                    <div>
+                      <p className="text-3xl font-black text-white">{totalHoursAllTime.toFixed(2)}h</p>
+                      <p className="text-xs text-gray-500 mt-1">total hours</p>
+                    </div>
+                    {hourlyRate > 0 && (
+                      <div className="text-right">
+                        <p className="text-2xl font-bold text-green-400">£{earningsAllTime.toFixed(2)}</p>
+                        <p className="text-xs text-gray-500 mt-1">total earned</p>
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                {hourlyRate === 0 && (
+                  <p className="text-xs text-gray-500 text-center">Set hourly rate to see earnings</p>
+                )}
+              </div>
+            </div>
+
             {/* Quick Stats */}
             <div className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-3xl p-8">
               <h2 className="text-xl font-bold text-white mb-6">Quick Stats</h2>
