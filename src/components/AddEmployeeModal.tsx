@@ -103,19 +103,30 @@ export default function AddEmployeeModal({ enterpriseId, onClose, onSuccess }: A
     setErrors({})
 
     try {
-      console.log('Calling create-employee edge function...')
+      console.log('🚀 [v2.0] Starting employee creation...')
+      console.log('Enterprise ID:', enterpriseId)
 
       // Get the current user's session token
       const { data: { session } } = await supabase.auth.getSession()
+      console.log('Session check:', session ? '✅ Valid' : '❌ No session')
+
       if (!session) {
         throw new Error('You must be logged in to create employees')
       }
 
       // Call the edge function to create employee (bypasses RLS issues)
       const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
-      console.log('Calling edge function at:', `${supabaseUrl}/functions/v1/create-employee`)
+      const edgeFunctionUrl = `${supabaseUrl}/functions/v1/create-employee`
+      console.log('🎯 Edge function URL:', edgeFunctionUrl)
+      console.log('📦 Request payload:', {
+        enterpriseId,
+        firstName: formData.firstName,
+        lastName: formData.lastName,
+        email: formData.email,
+      })
 
-      const response = await fetch(`${supabaseUrl}/functions/v1/create-employee`, {
+      console.log('🌐 Making POST request to edge function...')
+      const response = await fetch(edgeFunctionUrl, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -138,8 +149,11 @@ export default function AddEmployeeModal({ enterpriseId, onClose, onSuccess }: A
         }),
       })
 
+      console.log('📡 Response status:', response.status, response.statusText)
+      console.log('📡 Response headers:', Object.fromEntries(response.headers.entries()))
+
       const result = await response.json()
-      console.log('Edge function response:', result)
+      console.log('📥 Edge function response:', result)
 
       if (!response.ok) {
         throw new Error(result.error || 'Failed to create employee')
@@ -179,7 +193,10 @@ export default function AddEmployeeModal({ enterpriseId, onClose, onSuccess }: A
         {/* Header */}
         <div className="p-8 border-b border-white/10">
           <div className="flex items-center justify-between mb-4">
-            <h3 className="text-3xl font-black text-white">Add New Employee</h3>
+            <div>
+              <h3 className="text-3xl font-black text-white">Add New Employee</h3>
+              <span className="text-xs text-gray-500 font-mono">v2.0-edge-function</span>
+            </div>
             <button
               onClick={onClose}
               className="p-2 hover:bg-white/10 rounded-xl transition-colors"
