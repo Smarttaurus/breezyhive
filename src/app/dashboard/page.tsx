@@ -345,7 +345,10 @@ export default function DashboardPage() {
               </div>
             </button>
 
-            <button className="group relative overflow-hidden bg-gradient-to-br from-blue-500/20 via-blue-500/10 to-transparent rounded-2xl p-8 border border-blue-500/30 hover:border-blue-500/60 transition-all hover:scale-105 transform">
+            <Link
+              href="/dashboard/jobs/create"
+              className="group relative overflow-hidden bg-gradient-to-br from-blue-500/20 via-blue-500/10 to-transparent rounded-2xl p-8 border border-blue-500/30 hover:border-blue-500/60 transition-all hover:scale-105 transform block"
+            >
               <div className="absolute inset-0 bg-gradient-to-br from-blue-500/0 via-blue-500/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
               <div className="relative text-center">
                 <div className="w-16 h-16 mx-auto mb-4 bg-blue-500/20 rounded-2xl flex items-center justify-center text-4xl group-hover:scale-110 transition-transform">
@@ -354,7 +357,7 @@ export default function DashboardPage() {
                 <span className="text-base font-bold text-white block">Create Job</span>
                 <span className="text-xs text-gray-400 mt-1 block">Assign new project</span>
               </div>
-            </button>
+            </Link>
 
             <button className="group relative overflow-hidden bg-gradient-to-br from-green-500/20 via-green-500/10 to-transparent rounded-2xl p-8 border border-green-500/30 hover:border-green-500/60 transition-all hover:scale-105 transform">
               <div className="absolute inset-0 bg-gradient-to-br from-green-500/0 via-green-500/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
