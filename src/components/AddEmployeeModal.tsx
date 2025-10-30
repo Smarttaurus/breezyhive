@@ -247,7 +247,17 @@ export default function AddEmployeeModal({ enterpriseId, onClose, onSuccess }: A
         </div>
 
         {/* Form */}
-        <form onSubmit={step === 2 ? handleSubmit : (e) => e.preventDefault()} className="p-8">
+        <form
+          onSubmit={step === 2 ? handleSubmit : (e) => e.preventDefault()}
+          onKeyDown={(e) => {
+            // Prevent Enter key from submitting the form
+            if (e.key === 'Enter') {
+              e.preventDefault()
+              console.log('🚫 Enter key blocked to prevent auto-submission')
+            }
+          }}
+          className="p-8"
+        >
           {step === 1 && (
             <div className="space-y-6">
               <div className="grid grid-cols-2 gap-6">
