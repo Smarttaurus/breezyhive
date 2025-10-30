@@ -5,7 +5,6 @@ import { supabase } from '@/lib/supabase'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import AddEmployeeModal from '@/components/AddEmployeeModal'
-import ViewEmployeeModal from '@/components/ViewEmployeeModal'
 
 interface EnterpriseData {
   id: string
@@ -48,7 +47,6 @@ export default function DashboardPage() {
   const [enterprise, setEnterprise] = useState<EnterpriseData | null>(null)
   const [employees, setEmployees] = useState<Employee[]>([])
   const [showAddEmployee, setShowAddEmployee] = useState(false)
-  const [viewEmployeeId, setViewEmployeeId] = useState<string | null>(null)
   const [stats, setStats] = useState({
     totalEmployees: 0,
     activeEmployees: 0,
@@ -468,12 +466,12 @@ export default function DashboardPage() {
                       </td>
                       <td className="px-8 py-6 whitespace-nowrap">
                         <div className="flex items-center gap-3">
-                          <button
-                            onClick={() => setViewEmployeeId(employee.id)}
-                            className="px-6 py-2.5 bg-white/5 hover:bg-white/10 text-white rounded-lg text-sm font-semibold transition-all border border-white/10"
+                          <Link
+                            href={`/dashboard/employee/${employee.id}`}
+                            className="px-6 py-2.5 bg-white/5 hover:bg-white/10 text-white rounded-lg text-sm font-semibold transition-all border border-white/10 inline-block"
                           >
                             View Details
-                          </button>
+                          </Link>
                           <button
                             onClick={async () => {
                               if (confirm(`Are you sure you want to delete ${employee.first_name} ${employee.last_name}?`)) {
@@ -538,14 +536,6 @@ export default function DashboardPage() {
               await loadDashboardData(user.id)
             }
           }}
-        />
-      )}
-
-      {/* View Employee Modal */}
-      {viewEmployeeId && (
-        <ViewEmployeeModal
-          employeeId={viewEmployeeId}
-          onClose={() => setViewEmployeeId(null)}
         />
       )}
     </div>
