@@ -92,12 +92,19 @@ export default function AddEmployeeModal({ enterpriseId, onClose, onSuccess }: A
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
 
-    if (!validateStep2()) return
+    console.log('Creating employee with data:', formData)
+
+    if (!validateStep2()) {
+      console.log('Step 2 validation failed')
+      return
+    }
 
     setIsLoading(true)
     setErrors({})
 
     try {
+      console.log('Step 1: Creating Supabase auth user...')
+
       // 1. Create auth user for the employee
       const { data: authData, error: authError } = await supabase.auth.signUp({
         email: formData.email,
@@ -112,8 +119,12 @@ export default function AddEmployeeModal({ enterpriseId, onClose, onSuccess }: A
         },
       })
 
+      console.log('Auth response:', { authData, authError })
+
       if (authError) throw authError
       if (!authData.user) throw new Error('Failed to create user')
+
+      console.log('Step 2: Creating employee record...')
 
       // 2. Create employee record in enterprise_employees table
       const { error: employeeError } = await supabase
@@ -136,19 +147,33 @@ export default function AddEmployeeModal({ enterpriseId, onClose, onSuccess }: A
         })
 
       if (employeeError) {
-        // If employee creation fails, we should delete the auth user
-        // But for now, just throw the error
+        console.error('Employee record creation failed:', employeeError)
         throw employeeError
       }
+
+      console.log('✅ Employee created successfully!')
 
       // Success!
       onSuccess()
       onClose()
     } catch (error: any) {
-      console.error('Failed to create employee:', error)
+      console.error('❌ Failed to create employee:', error)
+      console.error('Error details:', error)
+
+      // Show user-friendly error
+      let errorMessage = 'Failed to create employee. Please try again.'
+
+      if (error.message?.includes('already registered')) {
+        errorMessage = 'This email is already registered. Please use a different email.'
+      } else if (error.message) {
+        errorMessage = error.message
+      }
+
       setErrors({
-        email: error.message || 'Failed to create employee. Please try again.'
+        email: errorMessage
       })
+
+      alert(`Error: ${errorMessage}`)
     } finally {
       setIsLoading(false)
     }
