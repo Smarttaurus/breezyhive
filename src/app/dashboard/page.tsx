@@ -464,9 +464,52 @@ export default function DashboardPage() {
                         )}
                       </td>
                       <td className="px-8 py-6 whitespace-nowrap">
-                        <button className="px-6 py-2.5 bg-white/5 hover:bg-white/10 text-white rounded-lg text-sm font-semibold transition-all border border-white/10">
-                          View Details
-                        </button>
+                        <div className="flex items-center gap-3">
+                          <button className="px-6 py-2.5 bg-white/5 hover:bg-white/10 text-white rounded-lg text-sm font-semibold transition-all border border-white/10">
+                            View Details
+                          </button>
+                          <button
+                            onClick={async () => {
+                              if (confirm(`Are you sure you want to delete ${employee.first_name} ${employee.last_name}?`)) {
+                                try {
+                                  const { data: { session } } = await supabase.auth.getSession()
+                                  if (!session) {
+                                    alert('You must be logged in')
+                                    return
+                                  }
+
+                                  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
+                                  const response = await fetch(`${supabaseUrl}/functions/v1/delete-employee`, {
+                                    method: 'POST',
+                                    headers: {
+                                      'Content-Type': 'application/json',
+                                      'Authorization': `Bearer ${session.access_token}`,
+                                    },
+                                    body: JSON.stringify({
+                                      employeeId: employee.id,
+                                      userId: employee.user_id
+                                    }),
+                                  })
+
+                                  const result = await response.json()
+
+                                  if (!response.ok) {
+                                    throw new Error(result.error || 'Failed to delete employee')
+                                  }
+
+                                  alert('Employee deleted successfully')
+                                  window.location.reload()
+                                } catch (error: any) {
+                                  console.error('Delete error:', error)
+                                  alert(`Error: ${error.message}`)
+                                }
+                              }
+                            }}
+                            className="px-6 py-2.5 bg-red-500/10 hover:bg-red-500/20 text-red-400 rounded-lg text-sm font-semibold transition-all border border-red-500/30 hover:border-red-500/50"
+                          >
+                            Delete
+                          </button>
+                        </div>
                       </td>
                     </tr>
                   ))}
