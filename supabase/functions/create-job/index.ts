@@ -76,29 +76,41 @@ serve(async (req) => {
     console.log('Enterprise verified:', enterprise.id)
 
     // 1. Create the job
+    console.log('Attempting to create job with data:', {
+      enterprise_id: enterpriseId,
+      title,
+      status: status || 'pending',
+      priority: priority || 'medium',
+    })
+
     const { data: job, error: jobError } = await supabaseAdmin
-      .from('jobs')
+      .from('enterprise_jobs')
       .insert({
-        customer_id: user.id, // Using user as customer for now
+        enterprise_id: enterpriseId,
         title: title,
         description: description,
-        location_address: location,
+        location: location,
         status: status || 'pending',
-        urgency: priority || 'medium',
-        start_date: dueDate,
-        expected_duration: estimatedHours ? `${estimatedHours} hours` : null,
-        budget_min: budget ? parseFloat(budget) : null,
-        budget_max: budget ? parseFloat(budget) : null,
+        priority: priority || 'medium',
+        due_date: dueDate,
+        estimated_hours: estimatedHours,
+        budget: budget,
+        notes: notes,
       })
       .select()
       .single()
 
     if (jobError) {
       console.error('Job creation failed:', jobError)
-      throw jobError
+      console.error('Job error details:', JSON.stringify(jobError, null, 2))
+      throw new Error(`Failed to create job: ${jobError.message || jobError.code}`)
     }
 
-    console.log('Job created:', job.id)
+    if (!job) {
+      throw new Error('Job was not created - no data returned')
+    }
+
+    console.log('Job created successfully:', job.id)
 
     // 2. Create job assignments for selected employees
     if (assignedEmployees && assignedEmployees.length > 0) {
@@ -109,7 +121,7 @@ serve(async (req) => {
       }))
 
       const { error: assignmentError } = await supabaseAdmin
-        .from('job_assignments')
+        .from('enterprise_job_assignments')
         .insert(assignments)
 
       if (assignmentError) {

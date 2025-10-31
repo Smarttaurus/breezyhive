@@ -314,7 +314,10 @@ export default function DashboardPage() {
             </div>
           </div>
 
-          <div className="group relative overflow-hidden bg-gradient-to-br from-purple-600/10 via-purple-500/5 to-transparent rounded-3xl p-8 border border-purple-500/20 hover:border-purple-500/40 transition-all">
+          <Link
+            href="/dashboard/jobs"
+            className="group relative overflow-hidden bg-gradient-to-br from-purple-600/10 via-purple-500/5 to-transparent rounded-3xl p-8 border border-purple-500/20 hover:border-purple-500/40 transition-all cursor-pointer block"
+          >
             <div className="absolute top-0 right-0 w-32 h-32 bg-purple-500/10 rounded-full blur-3xl group-hover:scale-150 transition-transform"></div>
             <div className="relative">
               <div className="flex items-center justify-between mb-6">
@@ -328,9 +331,12 @@ export default function DashboardPage() {
               <p className="text-sm font-semibold text-gray-400 mb-2">Active Jobs</p>
               <p className="text-5xl font-black text-white">{stats.totalJobs}</p>
             </div>
-          </div>
+          </Link>
 
-          <div className="group relative overflow-hidden bg-gradient-to-br from-orange-600/10 via-orange-500/5 to-transparent rounded-3xl p-8 border border-orange-500/20 hover:border-orange-500/40 transition-all">
+          <Link
+            href="/dashboard/expenses"
+            className="group relative overflow-hidden bg-gradient-to-br from-orange-600/10 via-orange-500/5 to-transparent rounded-3xl p-8 border border-orange-500/20 hover:border-orange-500/40 transition-all cursor-pointer block"
+          >
             <div className="absolute top-0 right-0 w-32 h-32 bg-orange-500/10 rounded-full blur-3xl group-hover:scale-150 transition-transform"></div>
             <div className="relative">
               <div className="flex items-center justify-between mb-6">
@@ -344,7 +350,7 @@ export default function DashboardPage() {
               <p className="text-sm font-semibold text-gray-400 mb-2">Expense Claims</p>
               <p className="text-5xl font-black text-orange-400">{stats.pendingExpenses}</p>
             </div>
-          </div>
+          </Link>
         </div>
 
         {/* Premium Quick Actions */}
@@ -379,7 +385,10 @@ export default function DashboardPage() {
               </div>
             </Link>
 
-            <button className="group relative overflow-hidden bg-gradient-to-br from-green-500/20 via-green-500/10 to-transparent rounded-2xl p-8 border border-green-500/30 hover:border-green-500/60 transition-all hover:scale-105 transform">
+            <Link
+              href="/dashboard/time-entries"
+              className="group relative overflow-hidden bg-gradient-to-br from-green-500/20 via-green-500/10 to-transparent rounded-2xl p-8 border border-green-500/30 hover:border-green-500/60 transition-all hover:scale-105 transform block"
+            >
               <div className="absolute inset-0 bg-gradient-to-br from-green-500/0 via-green-500/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
               <div className="relative text-center">
                 <div className="w-16 h-16 mx-auto mb-4 bg-green-500/20 rounded-2xl flex items-center justify-center text-4xl group-hover:scale-110 transition-transform">
@@ -388,7 +397,7 @@ export default function DashboardPage() {
                 <span className="text-base font-bold text-white block">Time Entries</span>
                 <span className="text-xs text-gray-400 mt-1 block">Review clock-ins</span>
               </div>
-            </button>
+            </Link>
 
             <Link
               href="/dashboard/expenses"

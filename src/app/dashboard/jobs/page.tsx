@@ -51,10 +51,10 @@ export default function JobsPage() {
 
       // Load jobs
       const { data: jobsData, error: jobsError } = await supabase
-        .from('jobs')
+        .from('enterprise_jobs')
         .select(`
           *,
-          job_assignments (
+          enterprise_job_assignments (
             id
           )
         `)
@@ -72,7 +72,7 @@ export default function JobsPage() {
         priority: job.priority,
         due_date: job.due_date,
         created_at: job.created_at,
-        assigned_employees: job.job_assignments?.length || 0,
+        assigned_employees: job.enterprise_job_assignments?.length || 0,
       })) || []
 
       setJobs(jobsWithCounts)

@@ -96,50 +96,78 @@ export default function CreateJobPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
 
-    if (!validateForm()) return
-    if (!enterpriseId) return
+    console.log('=== JOB CREATION DEBUG ===')
+    console.log('Form data:', formData)
+    console.log('Enterprise ID:', enterpriseId)
+
+    if (!validateForm()) {
+      console.log('Form validation failed')
+      return
+    }
+
+    if (!enterpriseId) {
+      console.log('No enterprise ID')
+      return
+    }
 
     setSubmitting(true)
 
     try {
       const { data: { session } } = await supabase.auth.getSession()
+      console.log('Session:', session?.user?.id)
+
       if (!session) {
         alert('You must be logged in')
         return
       }
 
       const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
+      console.log('Supabase URL:', supabaseUrl)
+      console.log('Edge function URL:', `${supabaseUrl}/functions/v1/create-job`)
+
+      const payload = {
+        enterpriseId,
+        title: formData.title,
+        description: formData.description,
+        location: formData.location,
+        status: formData.status,
+        priority: formData.priority,
+        dueDate: formData.dueDate,
+        estimatedHours: formData.estimatedHours ? parseFloat(formData.estimatedHours) : null,
+        budget: formData.budget ? parseFloat(formData.budget) : null,
+        notes: formData.notes,
+        assignedEmployees: formData.selectedEmployees,
+      }
+
+      console.log('Payload:', JSON.stringify(payload, null, 2))
+
       const response = await fetch(`${supabaseUrl}/functions/v1/create-job`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${session.access_token}`,
         },
-        body: JSON.stringify({
-          enterpriseId,
-          title: formData.title,
-          description: formData.description,
-          location: formData.location,
-          status: formData.status,
-          priority: formData.priority,
-          dueDate: formData.dueDate,
-          estimatedHours: formData.estimatedHours ? parseFloat(formData.estimatedHours) : null,
-          budget: formData.budget ? parseFloat(formData.budget) : null,
-          notes: formData.notes,
-          assignedEmployees: formData.selectedEmployees,
-        }),
+        body: JSON.stringify(payload),
       })
 
+      console.log('Response status:', response.status)
+      console.log('Response ok:', response.ok)
+
       const result = await response.json()
+      console.log('Response data:', JSON.stringify(result, null, 2))
 
       if (!response.ok) {
+        console.error('Response not OK. Error:', result)
         throw new Error(result.error || 'Failed to create job')
       }
 
+      console.log('Job created successfully! Job ID:', result.job?.id)
       alert('Job created successfully!')
       router.push('/dashboard/jobs')
     } catch (error: any) {
       console.error('Error creating job:', error)
+      console.error('Error message:', error.message)
+      console.error('Error stack:', error.stack)
       alert(`Error: ${error.message}`)
     } finally {
       setSubmitting(false)

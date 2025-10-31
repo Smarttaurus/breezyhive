@@ -90,7 +90,7 @@ serve(async (req) => {
       user_metadata: {
         first_name: firstName,
         last_name: lastName,
-        user_type: 'enterprise_employee',
+        user_type: 'enterprise', // Must match UserType.ENTERPRISE in mobile app
       }
     })
 
