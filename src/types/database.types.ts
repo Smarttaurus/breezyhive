@@ -102,7 +102,7 @@ export interface ExpenseStats {
 }
 
 export interface ExpenseBreakdown {
-  expense_type: ExpenseType;
+  expense_type: string;
   count: number;
   total_amount: number;
 }
