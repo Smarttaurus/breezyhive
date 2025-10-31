@@ -247,18 +247,18 @@ export default function DashboardPage() {
                 </div>
               </div>
               <div className="hidden lg:flex items-center gap-1 bg-white/5 rounded-xl p-1 border border-white/10">
-                <button className="px-4 py-2 bg-white/10 text-white rounded-lg text-sm font-semibold transition-all">
+                <Link href="/dashboard" className="px-4 py-2 bg-white/10 text-white rounded-lg text-sm font-semibold transition-all">
                   Overview
-                </button>
-                <button className="px-4 py-2 text-gray-400 hover:text-white rounded-lg text-sm font-semibold transition-all">
+                </Link>
+                <Link href="/dashboard/employees" className="px-4 py-2 text-gray-400 hover:text-white hover:bg-white/5 rounded-lg text-sm font-semibold transition-all">
                   Employees
-                </button>
-                <button className="px-4 py-2 text-gray-400 hover:text-white rounded-lg text-sm font-semibold transition-all">
+                </Link>
+                <Link href="/dashboard/jobs" className="px-4 py-2 text-gray-400 hover:text-white hover:bg-white/5 rounded-lg text-sm font-semibold transition-all">
                   Jobs
-                </button>
-                <button className="px-4 py-2 text-gray-400 hover:text-white rounded-lg text-sm font-semibold transition-all">
+                </Link>
+                <Link href="/dashboard/reports" className="px-4 py-2 text-gray-400 hover:text-white hover:bg-white/5 rounded-lg text-sm font-semibold transition-all">
                   Reports
-                </button>
+                </Link>
               </div>
             </div>
             <div className="flex items-center gap-4">
@@ -435,7 +435,7 @@ export default function DashboardPage() {
         {/* Premium Quick Actions */}
         <div className="bg-gradient-to-br from-white/5 to-white/[0.02] backdrop-blur-xl rounded-3xl p-8 border border-white/10 mb-12">
           <h3 className="text-2xl font-black text-white mb-8">Quick Actions</h3>
-          <div className="grid grid-cols-2 md:grid-cols-5 gap-6">
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-6">
             <button
               onClick={() => setShowAddEmployee(true)}
               className="group relative overflow-hidden bg-gradient-to-br from-primary/20 via-primary/10 to-transparent rounded-2xl p-8 border border-primary/30 hover:border-primary/60 transition-all hover:scale-105 transform"
@@ -505,6 +505,20 @@ export default function DashboardPage() {
                 <span className="text-xs text-gray-400 mt-1 block">View assignments</span>
               </div>
             </button>
+
+            <Link
+              href="/dashboard/marketplace"
+              className="group relative overflow-hidden bg-gradient-to-br from-cyan-500/20 via-cyan-500/10 to-transparent rounded-2xl p-8 border border-cyan-500/30 hover:border-cyan-500/60 transition-all hover:scale-105 transform block"
+            >
+              <div className="absolute inset-0 bg-gradient-to-br from-cyan-500/0 via-cyan-500/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
+              <div className="relative text-center">
+                <div className="w-16 h-16 mx-auto mb-4 bg-cyan-500/20 rounded-2xl flex items-center justify-center text-4xl group-hover:scale-110 transition-transform">
+                  🏪
+                </div>
+                <span className="text-base font-bold text-white block">Marketplace</span>
+                <span className="text-xs text-gray-400 mt-1 block">Browse public jobs</span>
+              </div>
+            </Link>
           </div>
         </div>
 
