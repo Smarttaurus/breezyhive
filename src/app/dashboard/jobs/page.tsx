@@ -61,7 +61,13 @@ export default function JobsPage() {
         .eq('enterprise_id', enterprise.id)
         .order('created_at', { ascending: false })
 
-      if (jobsError) throw jobsError
+      if (jobsError) {
+        console.error('Error loading jobs:', jobsError)
+        alert(`Failed to load jobs: ${jobsError.message}`)
+        throw jobsError
+      }
+
+      console.log('Jobs loaded successfully:', jobsData)
 
       const jobsWithCounts = jobsData?.map((job: any) => ({
         id: job.id,
