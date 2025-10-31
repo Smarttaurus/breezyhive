@@ -104,7 +104,7 @@ export default function ExpensesPage() {
             email,
             avatar_url
           ),
-          job:enterprise_jobs!employee_supplies_job_id_fkey (
+          job:jobs!employee_supplies_job_id_fkey (
             title,
             location
           )
@@ -112,7 +112,9 @@ export default function ExpensesPage() {
         .eq('enterprise_id', enterpriseId)
         .order('purchase_date', { ascending: false })
 
-      if (suppliesError) throw suppliesError
+      if (suppliesError) {
+        console.error('Error loading supplies:', suppliesError)
+      }
 
       // Load fuel entries
       const { data: fuelEntries, error: fuelError } = await supabase
@@ -125,7 +127,7 @@ export default function ExpensesPage() {
             email,
             avatar_url
           ),
-          job:enterprise_jobs!employee_fuel_entries_job_id_fkey (
+          job:jobs!employee_fuel_entries_job_id_fkey (
             title,
             location
           )
@@ -133,7 +135,9 @@ export default function ExpensesPage() {
         .eq('enterprise_id', enterpriseId)
         .order('fuel_date', { ascending: false })
 
-      if (fuelError) throw fuelError
+      if (fuelError) {
+        console.error('Error loading fuel entries:', fuelError)
+      }
 
       // Combine and type
       const combinedExpenses: CombinedExpense[] = [
