@@ -216,7 +216,7 @@ export function ExpenseApprovalModal({ expense, isOpen, onClose, onSuccess }: Ex
                 {(expense as EmployeeFuelEntry).odometer_reading && (
                   <div className="bg-white/5 rounded-xl p-4 border border-white/10">
                     <div className="text-xs text-gray-400 mb-1">Odometer</div>
-                    <div className="text-white font-semibold">{(expense as EmployeeFuelEntry).odometer_reading.toLocaleString()} miles</div>
+                    <div className="text-white font-semibold">{((expense as EmployeeFuelEntry).odometer_reading || 0).toLocaleString()} miles</div>
                   </div>
                 )}
               </>
