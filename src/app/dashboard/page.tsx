@@ -96,13 +96,33 @@ export default function DashboardPage() {
       if (employeesError) throw employeesError
       setEmployees(employeesData || [])
 
+      // Load jobs count
+      const { count: jobsCount } = await supabase
+        .from('enterprise_jobs')
+        .select('*', { count: 'exact', head: true })
+        .eq('enterprise_id', enterpriseData.id)
+        .in('status', ['pending', 'in_progress'])
+
+      // Load pending expenses count (supplies + fuel)
+      const { count: suppliesCount } = await supabase
+        .from('employee_supplies')
+        .select('*', { count: 'exact', head: true })
+        .eq('enterprise_id', enterpriseData.id)
+        .eq('status', 'pending')
+
+      const { count: fuelCount } = await supabase
+        .from('employee_fuel_entries')
+        .select('*', { count: 'exact', head: true })
+        .eq('enterprise_id', enterpriseData.id)
+        .eq('status', 'pending')
+
       // Calculate stats
       const activeEmployees = employeesData?.filter(e => e.is_active).length || 0
       setStats({
         totalEmployees: employeesData?.length || 0,
         activeEmployees,
-        totalJobs: 0,
-        pendingExpenses: 0,
+        totalJobs: jobsCount || 0,
+        pendingExpenses: (suppliesCount || 0) + (fuelCount || 0),
       })
 
     } catch (error) {
@@ -370,7 +390,10 @@ export default function DashboardPage() {
               </div>
             </button>
 
-            <button className="group relative overflow-hidden bg-gradient-to-br from-purple-500/20 via-purple-500/10 to-transparent rounded-2xl p-8 border border-purple-500/30 hover:border-purple-500/60 transition-all hover:scale-105 transform">
+            <Link
+              href="/dashboard/expenses"
+              className="group relative overflow-hidden bg-gradient-to-br from-purple-500/20 via-purple-500/10 to-transparent rounded-2xl p-8 border border-purple-500/30 hover:border-purple-500/60 transition-all hover:scale-105 transform block"
+            >
               <div className="absolute inset-0 bg-gradient-to-br from-purple-500/0 via-purple-500/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
               <div className="relative text-center">
                 <div className="w-16 h-16 mx-auto mb-4 bg-purple-500/20 rounded-2xl flex items-center justify-center text-4xl group-hover:scale-110 transition-transform">
@@ -379,7 +402,7 @@ export default function DashboardPage() {
                 <span className="text-base font-bold text-white block">Expenses</span>
                 <span className="text-xs text-gray-400 mt-1 block">Approve claims</span>
               </div>
-            </button>
+            </Link>
           </div>
         </div>
 
