@@ -63,8 +63,6 @@ export default function JobsPage() {
 
       if (jobsError) {
         console.error('Error loading jobs:', jobsError)
-        alert(`Failed to load jobs: ${jobsError.message}`)
-        throw jobsError
       }
 
       console.log('Jobs loaded successfully:', jobsData)
