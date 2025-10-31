@@ -26,18 +26,24 @@ export function ExpenseApprovalModal({ expense, isOpen, onClose, onSuccess }: Ex
     try {
       const table = expense.expense_type === 'supply' ? 'employee_supplies' : 'employee_fuel_entries'
 
-      const { error } = await supabase
+      console.log('Approving expense:', { table, id: expense.id, currentStatus: expense.status })
+
+      const { data, error } = await supabase
         .from(table)
         .update({ status: 'approved' })
         .eq('id', expense.id)
+        .select()
+
+      console.log('Approve result:', { data, error })
 
       if (error) throw error
 
+      alert('Expense approved successfully!')
       onSuccess()
       onClose()
     } catch (error) {
       console.error('Error approving expense:', error)
-      alert('Failed to approve expense')
+      alert(`Failed to approve expense: ${error}`)
     } finally {
       setIsLoading(false)
     }
