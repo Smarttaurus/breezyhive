@@ -26,19 +26,30 @@ interface Employee {
 
 interface TimeEntry {
   id: string
+  employee_id: string
+  enterprise_id: string
+  job_id: string | null
   clock_in_time: string
   clock_out_time: string | null
-  clock_in_location: { latitude: number; longitude: number } | null
-  clock_out_location: { latitude: number; longitude: number } | null
+  clock_in_latitude: number
+  clock_in_longitude: number
+  clock_in_address: string | null
+  clock_out_latitude: number | null
+  clock_out_longitude: number | null
+  clock_out_address: string | null
   total_hours: number | null
-  notes: string | null
+  status: string
   created_at: string
 }
 
 interface JobAssignment {
   id: string
+  job_id: string
   job_title: string
   job_status: string
+  job_location: string
+  job_priority: string
+  job_due_date: string | null
   assigned_at: string
   completed_at: string | null
 }
@@ -103,9 +114,9 @@ export default function EmployeeDetailsPage() {
         isActive: employeeData.is_active,
       })
 
-      // Load time entries (clock in/out records)
+      // Load time entries (clock in/out records) - FIXED TABLE NAME
       const { data: timeData, error: timeError } = await supabase
-        .from('time_entries')
+        .from('employee_time_entries')
         .select('*')
         .eq('employee_id', employeeId)
         .order('clock_in_time', { ascending: false })
@@ -113,19 +124,25 @@ export default function EmployeeDetailsPage() {
 
       if (!timeError && timeData) {
         setTimeEntries(timeData)
+      } else if (timeError) {
+        console.error('Error loading time entries:', timeError)
       }
 
-      // Load job assignments
+      // Load job assignments - FIXED TABLE NAME
       const { data: jobsData, error: jobsError } = await supabase
-        .from('job_assignments')
+        .from('enterprise_job_assignments')
         .select(`
           id,
           assigned_at,
           completed_at,
-          jobs:job_id (
+          notes,
+          job:enterprise_jobs!enterprise_job_assignments_job_id_fkey (
             id,
             title,
-            status
+            status,
+            location,
+            priority,
+            due_date
           )
         `)
         .eq('employee_id', employeeId)
@@ -135,11 +152,17 @@ export default function EmployeeDetailsPage() {
       if (!jobsError && jobsData) {
         setJobAssignments(jobsData.map((item: any) => ({
           id: item.id,
-          job_title: item.jobs?.title || 'Unknown Job',
-          job_status: item.jobs?.status || 'unknown',
+          job_id: item.job?.id || '',
+          job_title: item.job?.title || 'Unknown Job',
+          job_status: item.job?.status || 'unknown',
+          job_location: item.job?.location || '',
+          job_priority: item.job?.priority || 'medium',
+          job_due_date: item.job?.due_date || null,
           assigned_at: item.assigned_at,
           completed_at: item.completed_at,
         })))
+      } else if (jobsError) {
+        console.error('Error loading job assignments:', jobsError)
       }
 
     } catch (error) {
@@ -602,11 +625,14 @@ export default function EmployeeDetailsPage() {
                               minute: '2-digit'
                             })}
                           </p>
-                          {entry.clock_in_location && (
-                            <p className="text-xs text-gray-500 mt-1">
-                              📍 {entry.clock_in_location.latitude.toFixed(4)}, {entry.clock_in_location.longitude.toFixed(4)}
+                          {entry.clock_in_address && (
+                            <p className="text-xs text-gray-400 mt-1">
+                              📍 {entry.clock_in_address}
                             </p>
                           )}
+                          <p className="text-xs text-gray-500 mt-1 font-mono">
+                            {entry.clock_in_latitude.toFixed(6)}, {entry.clock_in_longitude.toFixed(6)}
+                          </p>
                         </div>
                         <div>
                           <p className="text-sm text-gray-400 mb-1">Clock Out</p>
@@ -621,9 +647,14 @@ export default function EmployeeDetailsPage() {
                                   minute: '2-digit'
                                 })}
                               </p>
-                              {entry.clock_out_location && (
-                                <p className="text-xs text-gray-500 mt-1">
-                                  📍 {entry.clock_out_location.latitude.toFixed(4)}, {entry.clock_out_location.longitude.toFixed(4)}
+                              {entry.clock_out_address && (
+                                <p className="text-xs text-gray-400 mt-1">
+                                  📍 {entry.clock_out_address}
+                                </p>
+                              )}
+                              {entry.clock_out_latitude && entry.clock_out_longitude && (
+                                <p className="text-xs text-gray-500 mt-1 font-mono">
+                                  {entry.clock_out_latitude.toFixed(6)}, {entry.clock_out_longitude.toFixed(6)}
                                 </p>
                               )}
                             </>
@@ -631,12 +662,11 @@ export default function EmployeeDetailsPage() {
                             <p className="text-yellow-400 font-semibold">Still clocked in</p>
                           )}
                         </div>
-                        <div className="md:col-span-2">
+                        <div className="md:col-span-2 mt-4 pt-4 border-t border-white/10">
                           <p className="text-sm text-gray-400 mb-1">Total Hours</p>
-                          <p className="text-white font-bold text-lg">{calculateTotalHours(entry)}</p>
-                          {entry.notes && (
-                            <p className="text-gray-400 text-sm mt-2">Note: {entry.notes}</p>
-                          )}
+                          <p className="text-white font-bold text-lg">
+                            {entry.total_hours ? `${entry.total_hours.toFixed(2)} hours` : 'Still clocked in'}
+                          </p>
                         </div>
                       </div>
                     </div>
@@ -656,33 +686,75 @@ export default function EmployeeDetailsPage() {
               ) : (
                 <div className="space-y-4">
                   {jobAssignments.map((job) => (
-                    <div key={job.id} className="bg-white/5 rounded-xl p-6 border border-white/10 flex items-center justify-between">
-                      <div>
-                        <p className="text-white font-bold text-lg mb-1">{job.job_title}</p>
-                        <p className="text-gray-400 text-sm">
-                          Assigned: {new Date(job.assigned_at).toLocaleDateString('en-US', {
-                            month: 'short',
-                            day: 'numeric',
-                            year: 'numeric'
-                          })}
-                        </p>
-                        {job.completed_at && (
-                          <p className="text-green-400 text-sm">
-                            Completed: {new Date(job.completed_at).toLocaleDateString('en-US', {
-                              month: 'short',
+                    <div key={job.id} className="bg-white/5 rounded-xl p-6 border border-white/10 hover:bg-white/10 transition-all">
+                      <div className="flex items-start justify-between mb-4">
+                        <div className="flex-1">
+                          <Link href={`/dashboard/jobs`} className="text-white font-bold text-lg mb-1 hover:text-primary transition-colors">
+                            {job.job_title}
+                          </Link>
+                          {job.job_location && (
+                            <p className="text-gray-400 text-sm flex items-center gap-1 mt-1">
+                              <span>📍</span> {job.job_location}
+                            </p>
+                          )}
+                        </div>
+                        <span className={`px-3 py-1 text-xs font-semibold rounded-full whitespace-nowrap ${
+                          job.job_status === 'completed' ? 'bg-green-500/20 text-green-300 border border-green-500/30' :
+                          job.job_status === 'in_progress' ? 'bg-blue-500/20 text-blue-300 border border-blue-500/30' :
+                          job.job_status === 'cancelled' ? 'bg-red-500/20 text-red-300 border border-red-500/30' :
+                          'bg-yellow-500/20 text-yellow-300 border border-yellow-500/30'
+                        }`}>
+                          {job.job_status.replace('_', ' ').toUpperCase()}
+                        </span>
+                      </div>
+
+                      <div className="grid grid-cols-2 gap-4 text-sm">
+                        <div>
+                          <p className="text-gray-400 mb-1">Assigned</p>
+                          <p className="text-white font-semibold">
+                            {new Date(job.assigned_at).toLocaleDateString('en-GB', {
                               day: 'numeric',
+                              month: 'short',
                               year: 'numeric'
                             })}
                           </p>
+                        </div>
+                        {job.job_due_date && (
+                          <div>
+                            <p className="text-gray-400 mb-1">Due Date</p>
+                            <p className="text-white font-semibold">
+                              {new Date(job.job_due_date).toLocaleDateString('en-GB', {
+                                day: 'numeric',
+                                month: 'short',
+                                year: 'numeric'
+                              })}
+                            </p>
+                          </div>
+                        )}
+                        <div>
+                          <p className="text-gray-400 mb-1">Priority</p>
+                          <span className={`px-2 py-1 text-xs font-semibold rounded ${
+                            job.job_priority === 'urgent' ? 'bg-red-500/20 text-red-300' :
+                            job.job_priority === 'high' ? 'bg-orange-500/20 text-orange-300' :
+                            job.job_priority === 'medium' ? 'bg-blue-500/20 text-blue-300' :
+                            'bg-gray-500/20 text-gray-300'
+                          }`}>
+                            {job.job_priority?.toUpperCase()}
+                          </span>
+                        </div>
+                        {job.completed_at && (
+                          <div>
+                            <p className="text-gray-400 mb-1">Completed</p>
+                            <p className="text-green-400 font-semibold">
+                              {new Date(job.completed_at).toLocaleDateString('en-GB', {
+                                day: 'numeric',
+                                month: 'short',
+                                year: 'numeric'
+                              })}
+                            </p>
+                          </div>
                         )}
                       </div>
-                      <span className={`px-4 py-2 text-sm font-bold rounded-xl ${
-                        job.job_status === 'completed' ? 'bg-green-500/20 text-green-300 border border-green-500/30' :
-                        job.job_status === 'in_progress' ? 'bg-blue-500/20 text-blue-300 border border-blue-500/30' :
-                        'bg-yellow-500/20 text-yellow-300 border border-yellow-500/30'
-                      }`}>
-                        {job.job_status.replace('_', ' ')}
-                      </span>
                     </div>
                   ))}
                 </div>
