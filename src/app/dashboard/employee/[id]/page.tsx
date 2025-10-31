@@ -64,6 +64,7 @@ export default function EmployeeDetailsPage() {
   const [jobAssignments, setJobAssignments] = useState<JobAssignment[]>([])
   const [loading, setLoading] = useState(true)
   const [editMode, setEditMode] = useState(false)
+  const [isClockedIn, setIsClockedIn] = useState(false)
 
   const [formData, setFormData] = useState({
     firstName: '',
@@ -124,6 +125,9 @@ export default function EmployeeDetailsPage() {
 
       if (!timeError && timeData) {
         setTimeEntries(timeData)
+        // Check if employee is currently clocked in
+        const activeClock = timeData.find(entry => entry.status === 'clocked_in')
+        setIsClockedIn(!!activeClock)
       } else if (timeError) {
         console.error('Error loading time entries:', timeError)
       }
@@ -511,16 +515,24 @@ export default function EmployeeDetailsPage() {
                       <option value="inactive">Inactive</option>
                     </select>
                   ) : (
-                    employee.is_active ? (
-                      <span className="inline-block px-4 py-2 text-sm font-bold rounded-xl bg-green-500/20 text-green-300 border border-green-500/30">
-                        <span className="w-2 h-2 bg-green-400 rounded-full animate-pulse inline-block mr-2"></span>
-                        Active
-                      </span>
-                    ) : (
-                      <span className="inline-block px-4 py-2 text-sm font-bold rounded-xl bg-gray-500/20 text-gray-400 border border-gray-500/30">
-                        Inactive
-                      </span>
-                    )
+                    <div className="flex gap-2">
+                      {employee.is_active ? (
+                        <span className="inline-block px-4 py-2 text-sm font-bold rounded-xl bg-green-500/20 text-green-300 border border-green-500/30">
+                          <span className="w-2 h-2 bg-green-400 rounded-full animate-pulse inline-block mr-2"></span>
+                          Active
+                        </span>
+                      ) : (
+                        <span className="inline-block px-4 py-2 text-sm font-bold rounded-xl bg-gray-500/20 text-gray-400 border border-gray-500/30">
+                          Inactive
+                        </span>
+                      )}
+                      {isClockedIn && (
+                        <span className="inline-block px-4 py-2 text-sm font-bold rounded-xl bg-blue-500/20 text-blue-300 border border-blue-500/30">
+                          <span className="w-2 h-2 bg-blue-400 rounded-full animate-pulse inline-block mr-2"></span>
+                          Currently Clocked In
+                        </span>
+                      )}
+                    </div>
                   )}
                 </div>
               </div>

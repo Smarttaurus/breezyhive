@@ -39,6 +39,7 @@ interface Employee {
   employment_type: string
   is_active: boolean
   created_at: string
+  is_clocked_in?: boolean
 }
 
 interface JobAssignment {
@@ -117,7 +118,26 @@ export default function DashboardPage() {
         .order('created_at', { ascending: false })
 
       if (employeesError) throw employeesError
-      setEmployees(employeesData || [])
+
+      // Check which employees are currently clocked in
+      if (employeesData && employeesData.length > 0) {
+        const { data: clockedInData } = await supabase
+          .from('employee_time_entries')
+          .select('employee_id')
+          .eq('enterprise_id', enterpriseData.id)
+          .eq('status', 'clocked_in')
+
+        const clockedInIds = new Set(clockedInData?.map(entry => entry.employee_id) || [])
+
+        const employeesWithStatus = employeesData.map(emp => ({
+          ...emp,
+          is_clocked_in: clockedInIds.has(emp.id)
+        }))
+
+        setEmployees(employeesWithStatus)
+      } else {
+        setEmployees([])
+      }
 
       // Load jobs count
       const { count: jobsCount } = await supabase
@@ -556,16 +576,24 @@ export default function DashboardPage() {
                         <span className="text-sm text-gray-300">{employee.employment_type}</span>
                       </td>
                       <td className="px-8 py-6 whitespace-nowrap">
-                        {employee.is_active ? (
-                          <span className="px-4 py-2 text-xs font-bold rounded-xl bg-green-500/20 text-green-300 border border-green-500/30 flex items-center gap-2 w-fit">
-                            <span className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></span>
-                            Active
-                          </span>
-                        ) : (
-                          <span className="px-4 py-2 text-xs font-bold rounded-xl bg-gray-500/20 text-gray-400 border border-gray-500/30">
-                            Inactive
-                          </span>
-                        )}
+                        <div className="flex flex-col gap-2">
+                          {employee.is_active ? (
+                            <span className="px-4 py-2 text-xs font-bold rounded-xl bg-green-500/20 text-green-300 border border-green-500/30 flex items-center gap-2 w-fit">
+                              <span className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></span>
+                              Active
+                            </span>
+                          ) : (
+                            <span className="px-4 py-2 text-xs font-bold rounded-xl bg-gray-500/20 text-gray-400 border border-gray-500/30 w-fit">
+                              Inactive
+                            </span>
+                          )}
+                          {employee.is_clocked_in && (
+                            <span className="px-4 py-2 text-xs font-bold rounded-xl bg-blue-500/20 text-blue-300 border border-blue-500/30 flex items-center gap-2 w-fit">
+                              <span className="w-2 h-2 bg-blue-400 rounded-full animate-pulse"></span>
+                              Clocked In
+                            </span>
+                          )}
+                        </div>
                       </td>
                       <td className="px-8 py-6 whitespace-nowrap">
                         <div className="flex items-center gap-3">
