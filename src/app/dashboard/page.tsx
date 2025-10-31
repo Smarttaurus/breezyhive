@@ -41,12 +41,35 @@ interface Employee {
   created_at: string
 }
 
+interface JobAssignment {
+  id: string
+  job_id: string
+  employee_id: string
+  assigned_at: string
+  completed_at: string | null
+  job: {
+    id: string
+    title: string
+    status: string
+    location: string
+    priority: string
+    due_date: string | null
+  }
+  employee: {
+    id: string
+    first_name: string
+    last_name: string
+  }
+}
+
 export default function DashboardPage() {
   const router = useRouter()
   const [loading, setLoading] = useState(true)
   const [enterprise, setEnterprise] = useState<EnterpriseData | null>(null)
   const [employees, setEmployees] = useState<Employee[]>([])
   const [showAddEmployee, setShowAddEmployee] = useState(false)
+  const [showJobAllocations, setShowJobAllocations] = useState(false)
+  const [jobAllocations, setJobAllocations] = useState<JobAssignment[]>([])
   const [stats, setStats] = useState({
     totalEmployees: 0,
     activeEmployees: 0,
@@ -115,6 +138,37 @@ export default function DashboardPage() {
         .select('*', { count: 'exact', head: true })
         .eq('enterprise_id', enterpriseData.id)
         .eq('status', 'pending')
+
+      // Load job allocations
+      const { data: allocationsData, error: allocationsError } = await supabase
+        .from('enterprise_job_assignments')
+        .select(`
+          id,
+          job_id,
+          employee_id,
+          assigned_at,
+          completed_at,
+          job:enterprise_jobs!enterprise_job_assignments_job_id_fkey (
+            id,
+            title,
+            status,
+            location,
+            priority,
+            due_date
+          ),
+          employee:enterprise_employees!enterprise_job_assignments_employee_id_fkey (
+            id,
+            first_name,
+            last_name
+          )
+        `)
+        .eq('enterprise_id', enterpriseData.id)
+        .order('assigned_at', { ascending: false })
+        .limit(20)
+
+      if (!allocationsError && allocationsData) {
+        setJobAllocations(allocationsData as any)
+      }
 
       // Calculate stats
       const activeEmployees = employeesData?.filter(e => e.is_active).length || 0
@@ -356,7 +410,7 @@ export default function DashboardPage() {
         {/* Premium Quick Actions */}
         <div className="bg-gradient-to-br from-white/5 to-white/[0.02] backdrop-blur-xl rounded-3xl p-8 border border-white/10 mb-12">
           <h3 className="text-2xl font-black text-white mb-8">Quick Actions</h3>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+          <div className="grid grid-cols-2 md:grid-cols-5 gap-6">
             <button
               onClick={() => setShowAddEmployee(true)}
               className="group relative overflow-hidden bg-gradient-to-br from-primary/20 via-primary/10 to-transparent rounded-2xl p-8 border border-primary/30 hover:border-primary/60 transition-all hover:scale-105 transform"
@@ -412,6 +466,20 @@ export default function DashboardPage() {
                 <span className="text-xs text-gray-400 mt-1 block">Approve claims</span>
               </div>
             </Link>
+
+            <button
+              onClick={() => setShowJobAllocations(true)}
+              className="group relative overflow-hidden bg-gradient-to-br from-orange-500/20 via-orange-500/10 to-transparent rounded-2xl p-8 border border-orange-500/30 hover:border-orange-500/60 transition-all hover:scale-105 transform"
+            >
+              <div className="absolute inset-0 bg-gradient-to-br from-orange-500/0 via-orange-500/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
+              <div className="relative text-center">
+                <div className="w-16 h-16 mx-auto mb-4 bg-orange-500/20 rounded-2xl flex items-center justify-center text-4xl group-hover:scale-110 transition-transform">
+                  👷
+                </div>
+                <span className="text-base font-bold text-white block">Job Allocations</span>
+                <span className="text-xs text-gray-400 mt-1 block">View assignments</span>
+              </div>
+            </button>
           </div>
         </div>
 
@@ -572,6 +640,159 @@ export default function DashboardPage() {
             }
           }}
         />
+      )}
+
+      {/* Job Allocations Modal */}
+      {showJobAllocations && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200">
+          <div className="bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 rounded-3xl shadow-2xl max-w-6xl w-full max-h-[90vh] overflow-hidden border border-gray-700/50">
+            {/* Header */}
+            <div className="sticky top-0 z-10 bg-gradient-to-r from-orange-600/20 via-orange-500/10 to-transparent border-b border-orange-500/20 px-8 py-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h2 className="text-3xl font-bold text-white mb-2">Job Allocations</h2>
+                  <p className="text-gray-400">View which jobs are assigned to which employees</p>
+                </div>
+                <button
+                  onClick={() => setShowJobAllocations(false)}
+                  className="text-gray-400 hover:text-white transition-colors p-2 hover:bg-white/10 rounded-xl"
+                >
+                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
+              </div>
+            </div>
+
+            {/* Content */}
+            <div className="overflow-y-auto p-8" style={{ maxHeight: 'calc(90vh - 140px)' }}>
+              {jobAllocations.length === 0 ? (
+                <div className="text-center py-20">
+                  <div className="w-24 h-24 mx-auto mb-6 bg-orange-500/10 rounded-full flex items-center justify-center">
+                    <span className="text-6xl">👷</span>
+                  </div>
+                  <h3 className="text-2xl font-bold text-white mb-3">No Job Allocations Yet</h3>
+                  <p className="text-gray-400 mb-6">Start assigning jobs to employees to see allocations here.</p>
+                  <Link
+                    href="/dashboard/jobs"
+                    onClick={() => setShowJobAllocations(false)}
+                    className="inline-block px-8 py-4 bg-gradient-to-r from-orange-600 to-orange-700 text-white rounded-xl font-bold hover:shadow-xl transition-all"
+                  >
+                    View Jobs
+                  </Link>
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  {jobAllocations.map((allocation) => (
+                    <div
+                      key={allocation.id}
+                      className="bg-white/5 rounded-2xl p-6 border border-white/10 hover:border-orange-500/30 transition-all"
+                    >
+                      <div className="flex items-start justify-between mb-4">
+                        <div className="flex-1">
+                          <div className="flex items-center gap-3 mb-3">
+                            <Link
+                              href={`/dashboard/jobs/${allocation.job.id}`}
+                              onClick={() => setShowJobAllocations(false)}
+                              className="text-xl font-bold text-white hover:text-orange-400 transition-colors"
+                            >
+                              {allocation.job.title}
+                            </Link>
+                            <span className={`px-3 py-1 rounded-full text-xs font-semibold ${
+                              allocation.job.status === 'pending' ? 'bg-yellow-500/20 text-yellow-300 border border-yellow-500/30' :
+                              allocation.job.status === 'in_progress' ? 'bg-blue-500/20 text-blue-300 border border-blue-500/30' :
+                              allocation.job.status === 'completed' ? 'bg-green-500/20 text-green-300 border border-green-500/30' :
+                              'bg-red-500/20 text-red-300 border border-red-500/30'
+                            }`}>
+                              {allocation.job.status.replace('_', ' ').toUpperCase()}
+                            </span>
+                            <span className={`px-3 py-1 rounded-full text-xs font-semibold ${
+                              allocation.job.priority === 'urgent' ? 'bg-red-500/20 text-red-300 border border-red-500/30' :
+                              allocation.job.priority === 'high' ? 'bg-orange-500/20 text-orange-300 border border-orange-500/30' :
+                              allocation.job.priority === 'medium' ? 'bg-yellow-500/20 text-yellow-300 border border-yellow-500/30' :
+                              'bg-gray-500/20 text-gray-300 border border-gray-500/30'
+                            }`}>
+                              {allocation.job.priority.toUpperCase()} PRIORITY
+                            </span>
+                          </div>
+                          <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                            <div>
+                              <div className="text-xs text-gray-500 mb-1">Assigned To</div>
+                              <Link
+                                href={`/dashboard/employee/${allocation.employee.id}`}
+                                onClick={() => setShowJobAllocations(false)}
+                                className="text-sm font-semibold text-orange-400 hover:text-orange-300 transition-colors flex items-center gap-2"
+                              >
+                                <div className="w-8 h-8 bg-gradient-to-br from-orange-500/30 to-orange-600/30 rounded-lg flex items-center justify-center text-white text-xs">
+                                  {allocation.employee.first_name[0]}{allocation.employee.last_name[0]}
+                                </div>
+                                {allocation.employee.first_name} {allocation.employee.last_name}
+                              </Link>
+                            </div>
+                            <div>
+                              <div className="text-xs text-gray-500 mb-1">Location</div>
+                              <div className="text-sm text-white font-medium">{allocation.job.location}</div>
+                            </div>
+                            <div>
+                              <div className="text-xs text-gray-500 mb-1">Assigned Date</div>
+                              <div className="text-sm text-white font-medium">
+                                {new Date(allocation.assigned_at).toLocaleDateString('en-GB', {
+                                  day: 'numeric',
+                                  month: 'short',
+                                  year: 'numeric'
+                                })}
+                              </div>
+                            </div>
+                            {allocation.job.due_date && (
+                              <div>
+                                <div className="text-xs text-gray-500 mb-1">Due Date</div>
+                                <div className="text-sm text-white font-medium">
+                                  {new Date(allocation.job.due_date).toLocaleDateString('en-GB', {
+                                    day: 'numeric',
+                                    month: 'short',
+                                    year: 'numeric'
+                                  })}
+                                </div>
+                              </div>
+                            )}
+                            {allocation.completed_at && (
+                              <div>
+                                <div className="text-xs text-gray-500 mb-1">Completed</div>
+                                <div className="text-sm text-green-400 font-medium">
+                                  {new Date(allocation.completed_at).toLocaleDateString('en-GB', {
+                                    day: 'numeric',
+                                    month: 'short',
+                                    year: 'numeric'
+                                  })}
+                                </div>
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                        <div className="flex gap-2 ml-4">
+                          <Link
+                            href={`/dashboard/jobs/${allocation.job.id}`}
+                            onClick={() => setShowJobAllocations(false)}
+                            className="px-4 py-2 bg-orange-600 hover:bg-orange-700 text-white rounded-lg text-sm font-semibold transition-all"
+                          >
+                            View Job
+                          </Link>
+                          <Link
+                            href={`/dashboard/employee/${allocation.employee.id}`}
+                            onClick={() => setShowJobAllocations(false)}
+                            className="px-4 py-2 bg-white/10 hover:bg-white/20 text-white rounded-lg text-sm font-semibold transition-all border border-white/20"
+                          >
+                            View Employee
+                          </Link>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
       )}
     </div>
   )
