@@ -159,7 +159,7 @@ export default function DashboardPage() {
         .eq('enterprise_id', enterpriseData.id)
         .eq('status', 'pending')
 
-      // Load job allocations
+      // Load job allocations - filter through jobs table since assignments don't have enterprise_id
       const { data: allocationsData, error: allocationsError } = await supabase
         .from('enterprise_job_assignments')
         .select(`
@@ -174,7 +174,8 @@ export default function DashboardPage() {
             status,
             location,
             priority,
-            due_date
+            due_date,
+            enterprise_id
           ),
           employee:enterprise_employees!enterprise_job_assignments_employee_id_fkey (
             id,
@@ -182,12 +183,16 @@ export default function DashboardPage() {
             last_name
           )
         `)
-        .eq('enterprise_id', enterpriseData.id)
         .order('assigned_at', { ascending: false })
-        .limit(20)
 
       if (!allocationsError && allocationsData) {
-        setJobAllocations(allocationsData as any)
+        // Filter by enterprise_id since we can't do it in the query
+        const filteredAllocations = allocationsData.filter((allocation: any) =>
+          allocation.job?.enterprise_id === enterpriseData.id
+        ).slice(0, 20)
+        setJobAllocations(filteredAllocations as any)
+      } else if (allocationsError) {
+        console.error('Error loading job allocations:', allocationsError)
       }
 
       // Calculate stats
