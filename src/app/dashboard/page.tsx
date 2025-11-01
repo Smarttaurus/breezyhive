@@ -157,6 +157,36 @@ export default function DashboardPage() {
     }
   }
 
+  // Simple geocoding using Nominatim (OpenStreetMap) - free, no API key needed
+  const geocodeAddress = async (address: string, postcode: string, country: string = 'GB') => {
+    try {
+      // Use postcode for more accurate results
+      const query = postcode || address
+      const countryCode = country === 'United States' ? 'US' : country
+
+      const response = await fetch(
+        `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&countrycodes=${countryCode}&limit=1`,
+        {
+          headers: {
+            'User-Agent': 'BreezyHive-Dashboard/1.0'
+          }
+        }
+      )
+
+      const data = await response.json()
+
+      if (data && data.length > 0) {
+        return {
+          latitude: parseFloat(data[0].lat),
+          longitude: parseFloat(data[0].lon)
+        }
+      }
+    } catch (error) {
+      console.error('Geocoding error:', error)
+    }
+    return null
+  }
+
   const loadDashboardData = async (userId: string) => {
     try {
       // Get enterprise
@@ -197,7 +227,7 @@ export default function DashboardPage() {
         setEmployees(employeesWithStatus)
       }
 
-      // Load enterprise jobs with coordinates
+      // Load enterprise jobs (note: no lat/long columns, only location text)
       const { data: enterpriseJobsData, error: enterpriseError } = await supabase
         .from('enterprise_jobs')
         .select('*')
@@ -206,48 +236,88 @@ export default function DashboardPage() {
       console.log('Enterprise jobs raw:', enterpriseJobsData)
       console.log('Enterprise jobs error:', enterpriseError)
 
-      const validEnterpriseJobs = (enterpriseJobsData || [])
-        .filter(job => job.location_latitude && job.location_longitude)
-        .map(job => ({
-          id: job.id,
-          title: job.title,
-          location_latitude: job.location_latitude,
-          location_longitude: job.location_longitude,
-          city: job.city,
-          category: job.category,
-          status: job.status,
-          budget_min: job.budget_min,
-          budget_max: job.budget_max,
-          source: 'enterprise' as const
-        }))
+      // Enterprise jobs: geocode the location text field
+      const enterpriseJobsWithCoords = await Promise.all(
+        (enterpriseJobsData || []).map(async (job) => {
+          if (!job.location) return null
 
-      console.log('Valid enterprise jobs with coords:', validEnterpriseJobs)
+          const coords = await geocodeAddress(job.location, job.location, 'GB')
+          if (!coords) return null
 
-      // Load marketplace jobs (public jobs from customers) - get ALL location fields
+          return {
+            id: job.id,
+            title: job.title,
+            location_latitude: coords.latitude,
+            location_longitude: coords.longitude,
+            city: job.location,
+            category: 'General', // enterprise jobs don't have category
+            status: job.status,
+            budget_min: parseFloat(job.budget) || 0,
+            budget_max: parseFloat(job.budget) || 0,
+            source: 'enterprise' as const
+          }
+        })
+      )
+
+      const validEnterpriseJobs = enterpriseJobsWithCoords.filter(job => job !== null)
+      console.log('Enterprise jobs geocoded:', validEnterpriseJobs)
+
+      // Load marketplace jobs (public jobs from customers)
       const { data: marketplaceJobsData, error: marketplaceError } = await supabase
         .from('jobs')
         .select('*')
         .eq('status', 'open')
 
-      console.log('Marketplace jobs raw (ALL FIELDS):', marketplaceJobsData)
+      console.log('Marketplace jobs raw:', marketplaceJobsData)
       console.log('Marketplace jobs error:', marketplaceError)
 
-      const validMarketplaceJobs = (marketplaceJobsData || [])
-        .filter(job => (job.location_latitude || job.locationLatitude) && (job.location_longitude || job.locationLongitude))
-        .map(job => ({
-          id: job.id,
-          title: job.title,
-          location_latitude: job.location_latitude || job.locationLatitude,
-          location_longitude: job.location_longitude || job.locationLongitude,
-          city: job.city,
-          category: job.category,
-          status: job.status,
-          budget_min: job.budget_min || job.budgetMin,
-          budget_max: job.budget_max || job.budgetMax,
-          source: 'marketplace' as const
-        }))
+      // Marketplace jobs: geocode using postcode or location_address
+      const marketplaceJobsWithCoords = await Promise.all(
+        (marketplaceJobsData || []).map(async (job) => {
+          // Skip if already has coordinates
+          if (job.location_latitude && job.location_longitude) {
+            return {
+              id: job.id,
+              title: job.title,
+              location_latitude: parseFloat(job.location_latitude),
+              location_longitude: parseFloat(job.location_longitude),
+              city: job.city || job.postcode,
+              category: job.category,
+              status: job.status,
+              budget_min: parseFloat(job.budget_min) || 0,
+              budget_max: parseFloat(job.budget_max) || 0,
+              source: 'marketplace' as const
+            }
+          }
 
-      console.log('Valid marketplace jobs with coords:', validMarketplaceJobs)
+          // Geocode using postcode or address
+          if (!job.postcode && !job.location_address) return null
+
+          const coords = await geocodeAddress(
+            job.location_address || '',
+            job.postcode || '',
+            job.country || 'GB'
+          )
+
+          if (!coords) return null
+
+          return {
+            id: job.id,
+            title: job.title,
+            location_latitude: coords.latitude,
+            location_longitude: coords.longitude,
+            city: job.city || job.postcode,
+            category: job.category,
+            status: job.status,
+            budget_min: parseFloat(job.budget_min) || 0,
+            budget_max: parseFloat(job.budget_max) || 0,
+            source: 'marketplace' as const
+          }
+        })
+      )
+
+      const validMarketplaceJobs = marketplaceJobsWithCoords.filter(job => job !== null)
+      console.log('Marketplace jobs geocoded:', validMarketplaceJobs)
 
       // Combine both job sources
       const allJobs = [...validEnterpriseJobs, ...validMarketplaceJobs]
