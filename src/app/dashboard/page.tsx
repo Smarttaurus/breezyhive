@@ -223,19 +223,27 @@ export default function DashboardPage() {
 
       console.log('Valid enterprise jobs with coords:', validEnterpriseJobs)
 
-      // Load marketplace jobs (public jobs from customers)
+      // Load marketplace jobs (public jobs from customers) - get ALL location fields
       const { data: marketplaceJobsData, error: marketplaceError } = await supabase
         .from('jobs')
-        .select('id, title, location_latitude, location_longitude, city, category, status, budget_min, budget_max')
+        .select('*')
         .eq('status', 'open')
 
-      console.log('Marketplace jobs raw:', marketplaceJobsData)
+      console.log('Marketplace jobs raw (ALL FIELDS):', marketplaceJobsData)
       console.log('Marketplace jobs error:', marketplaceError)
 
       const validMarketplaceJobs = (marketplaceJobsData || [])
-        .filter(job => job.location_latitude && job.location_longitude)
+        .filter(job => (job.location_latitude || job.locationLatitude) && (job.location_longitude || job.locationLongitude))
         .map(job => ({
-          ...job,
+          id: job.id,
+          title: job.title,
+          location_latitude: job.location_latitude || job.locationLatitude,
+          location_longitude: job.location_longitude || job.locationLongitude,
+          city: job.city,
+          category: job.category,
+          status: job.status,
+          budget_min: job.budget_min || job.budgetMin,
+          budget_max: job.budget_max || job.budgetMax,
           source: 'marketplace' as const
         }))
 
