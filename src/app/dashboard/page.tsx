@@ -43,17 +43,59 @@ interface Job {
   source?: 'enterprise' | 'marketplace' // Track where job came from
 }
 
-// Job categories for filtering
+// ALL Job categories from mobile app (50 categories)
 const JOB_CATEGORIES = [
-  { id: 'all', name: 'All Jobs', icon: '🔧' },
-  { id: 'plumbing', name: 'Plumbing', icon: '💧' },
-  { id: 'electrical', name: 'Electrical', icon: '⚡' },
-  { id: 'building', name: 'Building', icon: '🏗️' },
-  { id: 'roofing', name: 'Roofing', icon: '🏠' },
-  { id: 'carpentry', name: 'Carpentry', icon: '🔨' },
-  { id: 'painting', name: 'Painting', icon: '🎨' },
-  { id: 'landscaping', name: 'Landscaping', icon: '🌿' },
-  { id: 'handyman', name: 'Handyman', icon: '🛠️' },
+  { id: 'all', name: 'All Categories' },
+  { id: 'plumbing', name: 'Plumbing & Heating' },
+  { id: 'electrical', name: 'Electrical' },
+  { id: 'building', name: 'Building & Construction' },
+  { id: 'roofing', name: 'Roofing' },
+  { id: 'carpentry', name: 'Carpentry & Joinery' },
+  { id: 'painting', name: 'Painting & Decorating' },
+  { id: 'plastering', name: 'Plastering & Rendering' },
+  { id: 'flooring', name: 'Flooring' },
+  { id: 'tiling', name: 'Tiling' },
+  { id: 'kitchen_bathroom', name: 'Kitchen & Bathroom' },
+  { id: 'windows_doors', name: 'Windows & Doors' },
+  { id: 'landscaping', name: 'Landscaping & Gardening' },
+  { id: 'groundwork', name: 'Groundwork & Drainage' },
+  { id: 'driveways', name: 'Driveways & Paving' },
+  { id: 'gas', name: 'Gas Services' },
+  { id: 'hvac', name: 'HVAC & Air Conditioning' },
+  { id: 'insulation', name: 'Insulation & Damp Proofing' },
+  { id: 'specialist', name: 'Specialist Services' },
+  { id: 'demolition', name: 'Demolition & Clearance' },
+  { id: 'scaffolding', name: 'Scaffolding' },
+  { id: 'security', name: 'Security & Alarms' },
+  { id: 'solar', name: 'Solar & Renewable Energy' },
+  { id: 'cleaning', name: 'Cleaning Services' },
+  { id: 'pest_control', name: 'Pest Control' },
+  { id: 'handyman', name: 'Handyman Services' },
+  { id: 'plant_hire', name: 'Plant Hire & Equipment' },
+  { id: 'tool_hire', name: 'Tool Hire' },
+  { id: 'skip_hire', name: 'Skip Hire & Waste' },
+  { id: 'removals', name: 'Removals & Storage' },
+  { id: 'masonry', name: 'Masonry & Stonework' },
+  { id: 'welding', name: 'Welding & Metalwork' },
+  { id: 'concrete', name: 'Concrete Services' },
+  { id: 'crane_lifting', name: 'Crane & Lifting Services' },
+  { id: 'access_equipment', name: 'Access Equipment' },
+  { id: 'piling', name: 'Piling & Drilling' },
+  { id: 'site_services', name: 'Site Services' },
+  { id: 'surveying', name: 'Surveying & Engineering' },
+  { id: 'shuttering', name: 'Shuttering & Formwork' },
+  { id: 'suspended_ceilings', name: 'Suspended Ceilings' },
+  { id: 'partitions', name: 'Partitions & Dividers' },
+  { id: 'cladding', name: 'Cladding & Facades' },
+  { id: 'fire_safety', name: 'Fire Safety & Protection' },
+  { id: 'waterproofing', name: 'Waterproofing' },
+  { id: 'excavation', name: 'Excavation & Earthworks' },
+  { id: 'mechanical', name: 'Mechanical Services' },
+  { id: 'shopfitting', name: 'Shopfitting & Joinery' },
+  { id: 'signage', name: 'Signage & Graphics' },
+  { id: 'flooring_industrial', name: 'Industrial Flooring' },
+  { id: 'testing_inspection', name: 'Testing & Inspection' },
+  { id: 'other', name: 'Other Services' },
 ]
 
 export default function DashboardPage() {
@@ -156,10 +198,13 @@ export default function DashboardPage() {
       }
 
       // Load enterprise jobs with coordinates
-      const { data: enterpriseJobsData } = await supabase
+      const { data: enterpriseJobsData, error: enterpriseError } = await supabase
         .from('enterprise_jobs')
         .select('*')
         .eq('enterprise_id', enterpriseData.id)
+
+      console.log('Enterprise jobs raw:', enterpriseJobsData)
+      console.log('Enterprise jobs error:', enterpriseError)
 
       const validEnterpriseJobs = (enterpriseJobsData || [])
         .filter(job => job.location_latitude && job.location_longitude)
@@ -176,11 +221,16 @@ export default function DashboardPage() {
           source: 'enterprise' as const
         }))
 
+      console.log('Valid enterprise jobs with coords:', validEnterpriseJobs)
+
       // Load marketplace jobs (public jobs from customers)
-      const { data: marketplaceJobsData } = await supabase
+      const { data: marketplaceJobsData, error: marketplaceError } = await supabase
         .from('jobs')
         .select('id, title, location_latitude, location_longitude, city, category, status, budget_min, budget_max')
         .eq('status', 'open')
+
+      console.log('Marketplace jobs raw:', marketplaceJobsData)
+      console.log('Marketplace jobs error:', marketplaceError)
 
       const validMarketplaceJobs = (marketplaceJobsData || [])
         .filter(job => job.location_latitude && job.location_longitude)
@@ -189,8 +239,12 @@ export default function DashboardPage() {
           source: 'marketplace' as const
         }))
 
+      console.log('Valid marketplace jobs with coords:', validMarketplaceJobs)
+
       // Combine both job sources
       const allJobs = [...validEnterpriseJobs, ...validMarketplaceJobs]
+
+      console.log('All jobs combined:', allJobs)
 
       setJobs(allJobs)
       setFilteredJobs(allJobs)
@@ -256,38 +310,54 @@ export default function DashboardPage() {
             <h1 className="text-lg font-black text-white">{enterprise?.business_name}</h1>
           </div>
 
-          {/* Job Source Filter */}
-          <div className="flex gap-2 bg-black/30 backdrop-blur-md border border-white/10 rounded-xl p-1">
-            <button
-              onClick={() => setSourceFilter('all')}
-              className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${
-                sourceFilter === 'all'
-                  ? 'bg-primary text-white'
-                  : 'text-gray-400 hover:text-white hover:bg-white/10'
-              }`}
+          {/* Filters Row */}
+          <div className="flex gap-2">
+            {/* Job Source Filter */}
+            <div className="flex gap-2 bg-black/30 backdrop-blur-md border border-white/10 rounded-xl p-1">
+              <button
+                onClick={() => setSourceFilter('all')}
+                className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${
+                  sourceFilter === 'all'
+                    ? 'bg-primary text-white'
+                    : 'text-gray-400 hover:text-white hover:bg-white/10'
+                }`}
+              >
+                All ({jobs.length})
+              </button>
+              <button
+                onClick={() => setSourceFilter('enterprise')}
+                className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${
+                  sourceFilter === 'enterprise'
+                    ? 'bg-blue-500 text-white'
+                    : 'text-gray-400 hover:text-white hover:bg-white/10'
+                }`}
+              >
+                My Jobs ({jobs.filter(j => j.source === 'enterprise').length})
+              </button>
+              <button
+                onClick={() => setSourceFilter('marketplace')}
+                className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${
+                  sourceFilter === 'marketplace'
+                    ? 'bg-orange-500 text-white'
+                    : 'text-gray-400 hover:text-white hover:bg-white/10'
+                }`}
+              >
+                Marketplace ({jobs.filter(j => j.source === 'marketplace').length})
+              </button>
+            </div>
+
+            {/* Category Filter Dropdown */}
+            <select
+              value={categoryFilter}
+              onChange={(e) => setCategoryFilter(e.target.value)}
+              className="bg-black/30 backdrop-blur-md border border-white/10 rounded-xl px-4 py-2 text-white text-xs font-bold focus:outline-none focus:border-primary/50 transition-all"
             >
-              All ({jobs.length})
-            </button>
-            <button
-              onClick={() => setSourceFilter('enterprise')}
-              className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${
-                sourceFilter === 'enterprise'
-                  ? 'bg-blue-500 text-white'
-                  : 'text-gray-400 hover:text-white hover:bg-white/10'
-              }`}
-            >
-              My Jobs ({jobs.filter(j => j.source === 'enterprise').length})
-            </button>
-            <button
-              onClick={() => setSourceFilter('marketplace')}
-              className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${
-                sourceFilter === 'marketplace'
-                  ? 'bg-orange-500 text-white'
-                  : 'text-gray-400 hover:text-white hover:bg-white/10'
-              }`}
-            >
-              Marketplace ({jobs.filter(j => j.source === 'marketplace').length})
-            </button>
+              {JOB_CATEGORIES.map((category) => (
+                <option key={category.id} value={category.id}>
+                  {category.name}
+                </option>
+              ))}
+            </select>
           </div>
 
           {/* Mini Stats Cards */}
@@ -323,30 +393,6 @@ export default function DashboardPage() {
         </div>
       </div>
 
-      {/* Category Filter - Left Side */}
-      <div className="fixed top-20 left-72 z-20 pointer-events-none">
-        <div className="flex flex-col gap-2 pointer-events-auto max-h-[calc(100vh-200px)] overflow-y-auto pr-2 scrollbar-thin scrollbar-thumb-white/20 scrollbar-track-transparent">
-          {JOB_CATEGORIES.map((category) => (
-            <button
-              key={category.id}
-              onClick={() => handleCategoryFilter(category.id)}
-              className={`group bg-gradient-to-br backdrop-blur-md border rounded-xl px-3 py-2 hover:bg-white/15 transition-all flex items-center gap-2 min-w-[140px] ${
-                categoryFilter === category.id
-                  ? 'from-primary/30 to-accent/30 border-primary/60 bg-white/20'
-                  : 'from-white/5 to-transparent border-white/20 hover:border-primary/40'
-              }`}
-            >
-              <span className="text-lg">{category.icon}</span>
-              <div className="text-white font-bold text-xs">{category.name}</div>
-              {categoryFilter === category.id && jobs.filter(j => category.id === 'all' || j.category === category.id).length > 0 && (
-                <div className="ml-auto w-5 h-5 rounded-full bg-primary/50 flex items-center justify-center text-white text-xs font-bold">
-                  {jobs.filter(j => category.id === 'all' || j.category === category.id).length}
-                </div>
-              )}
-            </button>
-          ))}
-        </div>
-      </div>
     </div>
   )
 }
