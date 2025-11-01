@@ -40,6 +40,7 @@ interface Job {
   status: string
   budget_min?: number
   budget_max?: number
+  source?: 'enterprise' | 'marketplace' // Track where job came from
 }
 
 // Job categories for filtering
@@ -63,6 +64,7 @@ export default function DashboardPage() {
   const [jobs, setJobs] = useState<Job[]>([])
   const [filteredJobs, setFilteredJobs] = useState<Job[]>([])
   const [categoryFilter, setCategoryFilter] = useState<string>('all')
+  const [sourceFilter, setSourceFilter] = useState<'all' | 'enterprise' | 'marketplace'>('all')
   const [stats, setStats] = useState({
     totalEmployees: 0,
     activeEmployees: 0,
@@ -78,12 +80,20 @@ export default function DashboardPage() {
   }, [])
 
   useEffect(() => {
-    if (categoryFilter === 'all') {
-      setFilteredJobs(jobs)
-    } else {
-      setFilteredJobs(jobs.filter(job => job.category === categoryFilter))
+    let filtered = jobs
+
+    // Filter by source
+    if (sourceFilter !== 'all') {
+      filtered = filtered.filter(job => job.source === sourceFilter)
     }
-  }, [categoryFilter, jobs])
+
+    // Filter by category
+    if (categoryFilter !== 'all') {
+      filtered = filtered.filter(job => job.category === categoryFilter)
+    }
+
+    setFilteredJobs(filtered)
+  }, [categoryFilter, sourceFilter, jobs])
 
   const handleCategoryFilter = (category: string) => {
     setCategoryFilter(category)
@@ -145,18 +155,45 @@ export default function DashboardPage() {
         setEmployees(employeesWithStatus)
       }
 
-      // Load jobs with coordinates
-      const { data: jobsData } = await supabase
+      // Load enterprise jobs with coordinates
+      const { data: enterpriseJobsData } = await supabase
         .from('enterprise_jobs')
         .select('*')
         .eq('enterprise_id', enterpriseData.id)
 
-      const validJobs = jobsData?.filter(job =>
-        job.location_latitude && job.location_longitude
-      ) || []
+      const validEnterpriseJobs = (enterpriseJobsData || [])
+        .filter(job => job.location_latitude && job.location_longitude)
+        .map(job => ({
+          id: job.id,
+          title: job.title,
+          location_latitude: job.location_latitude,
+          location_longitude: job.location_longitude,
+          city: job.city,
+          category: job.category,
+          status: job.status,
+          budget_min: job.budget_min,
+          budget_max: job.budget_max,
+          source: 'enterprise' as const
+        }))
 
-      setJobs(validJobs)
-      setFilteredJobs(validJobs)
+      // Load marketplace jobs (public jobs from customers)
+      const { data: marketplaceJobsData } = await supabase
+        .from('jobs')
+        .select('id, title, location_latitude, location_longitude, city, category, status, budget_min, budget_max')
+        .eq('status', 'open')
+
+      const validMarketplaceJobs = (marketplaceJobsData || [])
+        .filter(job => job.location_latitude && job.location_longitude)
+        .map(job => ({
+          ...job,
+          source: 'marketplace' as const
+        }))
+
+      // Combine both job sources
+      const allJobs = [...validEnterpriseJobs, ...validMarketplaceJobs]
+
+      setJobs(allJobs)
+      setFilteredJobs(allJobs)
 
       // Load stats
       const { data: expensesData } = await supabase
@@ -217,6 +254,40 @@ export default function DashboardPage() {
           {/* Compact Header */}
           <div className="bg-black/30 backdrop-blur-md border border-white/10 rounded-xl px-4 py-2">
             <h1 className="text-lg font-black text-white">{enterprise?.business_name}</h1>
+          </div>
+
+          {/* Job Source Filter */}
+          <div className="flex gap-2 bg-black/30 backdrop-blur-md border border-white/10 rounded-xl p-1">
+            <button
+              onClick={() => setSourceFilter('all')}
+              className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${
+                sourceFilter === 'all'
+                  ? 'bg-primary text-white'
+                  : 'text-gray-400 hover:text-white hover:bg-white/10'
+              }`}
+            >
+              All ({jobs.length})
+            </button>
+            <button
+              onClick={() => setSourceFilter('enterprise')}
+              className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${
+                sourceFilter === 'enterprise'
+                  ? 'bg-blue-500 text-white'
+                  : 'text-gray-400 hover:text-white hover:bg-white/10'
+              }`}
+            >
+              My Jobs ({jobs.filter(j => j.source === 'enterprise').length})
+            </button>
+            <button
+              onClick={() => setSourceFilter('marketplace')}
+              className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${
+                sourceFilter === 'marketplace'
+                  ? 'bg-orange-500 text-white'
+                  : 'text-gray-400 hover:text-white hover:bg-white/10'
+              }`}
+            >
+              Marketplace ({jobs.filter(j => j.source === 'marketplace').length})
+            </button>
           </div>
 
           {/* Mini Stats Cards */}

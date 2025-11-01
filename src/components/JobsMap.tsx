@@ -14,6 +14,7 @@ interface Job {
   status: string
   budget_min?: number
   budget_max?: number
+  source?: 'enterprise' | 'marketplace'
 }
 
 interface JobsMapProps {
@@ -126,14 +127,24 @@ export default function JobsMap({ jobs, height = '500px' }: JobsMapProps) {
     validJobs.forEach((job) => {
       const el = document.createElement('div')
       el.className = 'job-marker'
+
+      // Different colors for enterprise vs marketplace
+      const markerColor = job.source === 'marketplace'
+        ? 'from-orange-500 to-orange-600'
+        : 'from-blue-500 to-blue-600'
+
+      const sourceLabel = job.source === 'marketplace' ? 'Marketplace' : 'My Job'
+      const sourceColor = job.source === 'marketplace' ? 'text-orange-400' : 'text-blue-400'
+
       el.innerHTML = `
         <div class="relative group cursor-pointer">
-          <div class="w-10 h-10 rounded-full bg-gradient-to-br from-primary to-accent border-4 border-white/20 shadow-lg flex items-center justify-center text-white font-bold text-sm animate-pulse hover:scale-125 transition-transform">
+          <div class="w-10 h-10 rounded-full bg-gradient-to-br ${markerColor} border-4 border-white/20 shadow-lg flex items-center justify-center text-white font-bold text-sm animate-pulse hover:scale-125 transition-transform">
             ${job.status === 'open' ? '📍' : '🔧'}
           </div>
           <div class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 hidden group-hover:block z-50">
             <div class="bg-gray-900 text-white text-xs rounded-lg p-3 shadow-xl border border-white/10 min-w-[200px]">
               <div class="font-bold mb-1">${job.title}</div>
+              <div class="${sourceColor} text-xs font-semibold mb-1">${sourceLabel}</div>
               <div class="text-gray-400">${job.city}</div>
               <div class="text-gray-400">${job.category}</div>
               ${job.budget_min && job.budget_max ? `<div class="text-green-400 font-semibold mt-1">£${job.budget_min} - £${job.budget_max}</div>` : ''}
@@ -169,11 +180,20 @@ export default function JobsMap({ jobs, height = '500px' }: JobsMapProps) {
 
       {/* Map Legend */}
       <div className="absolute top-4 left-4 bg-gray-900/90 backdrop-blur-sm border border-white/10 rounded-xl p-4 text-white">
-        <div className="text-sm font-bold mb-2">Job Locations</div>
+        <div className="text-sm font-bold mb-3">Job Locations</div>
         <div className="space-y-2 text-xs">
           <div className="flex items-center gap-2">
+            <div className="w-4 h-4 rounded-full bg-gradient-to-br from-blue-500 to-blue-600"></div>
+            <span className="text-gray-400">My Jobs ({jobs.filter(j => j.source === 'enterprise').length})</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <div className="w-4 h-4 rounded-full bg-gradient-to-br from-orange-500 to-orange-600"></div>
+            <span className="text-gray-400">Marketplace ({jobs.filter(j => j.source === 'marketplace').length})</span>
+          </div>
+          <div className="border-t border-white/10 my-2"></div>
+          <div className="flex items-center gap-2">
             <span>📍</span>
-            <span className="text-gray-400">Open Jobs ({jobs.filter(j => j.status === 'open').length})</span>
+            <span className="text-gray-400">Open ({jobs.filter(j => j.status === 'open').length})</span>
           </div>
           <div className="flex items-center gap-2">
             <span>🔧</span>
