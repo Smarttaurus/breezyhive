@@ -212,9 +212,9 @@ export default function DashboardPage() {
         totalEmployees: employeesData?.length || 0,
         activeEmployees: employeesData?.filter(e => e.is_active).length || 0,
         clockedIn: employeesData?.filter(e => e.is_clocked_in).length || 0,
-        totalJobs: jobsData?.length || 0,
-        openJobs: jobsData?.filter(j => j.status === 'open').length || 0,
-        inProgressJobs: jobsData?.filter(j => j.status === 'in_progress').length || 0,
+        totalJobs: allJobs.length,
+        openJobs: allJobs.filter(j => j.status === 'open').length,
+        inProgressJobs: allJobs.filter(j => j.status === 'in_progress').length,
         pendingExpenses: (expensesData?.length || 0) + (fuelData?.length || 0)
       })
 
