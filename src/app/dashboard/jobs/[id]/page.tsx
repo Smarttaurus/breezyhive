@@ -26,6 +26,7 @@ interface Employee {
   last_name: string
   email: string
   role: string
+  phone_number?: string
 }
 
 export default function JobDetailPage() {
@@ -34,14 +35,24 @@ export default function JobDetailPage() {
   const jobId = params?.id as string
 
   const [loading, setLoading] = useState(true)
+  const [saving, setSaving] = useState(false)
   const [job, setJob] = useState<Job | null>(null)
+  const [originalJob, setOriginalJob] = useState<Job | null>(null)
   const [assignedEmployees, setAssignedEmployees] = useState<Employee[]>([])
+  const [hasChanges, setHasChanges] = useState(false)
 
   useEffect(() => {
     if (jobId) {
       loadJobDetails()
     }
   }, [jobId])
+
+  useEffect(() => {
+    if (job && originalJob) {
+      const changed = JSON.stringify(job) !== JSON.stringify(originalJob)
+      setHasChanges(changed)
+    }
+  }, [job, originalJob])
 
   const loadJobDetails = async () => {
     try {
@@ -65,6 +76,7 @@ export default function JobDetailPage() {
       }
 
       setJob(jobData)
+      setOriginalJob(JSON.parse(JSON.stringify(jobData)))
 
       // Load assigned employees
       const { data: assignmentsData, error: assignmentsError } = await supabase
@@ -76,7 +88,8 @@ export default function JobDetailPage() {
             first_name,
             last_name,
             email,
-            role
+            role,
+            phone_number
           )
         `)
         .eq('job_id', jobId)
@@ -92,6 +105,44 @@ export default function JobDetailPage() {
       console.error('Error:', error)
     } finally {
       setLoading(false)
+    }
+  }
+
+  const handleSave = async () => {
+    if (!job) return
+
+    setSaving(true)
+    try {
+      const { error } = await supabase
+        .from('enterprise_jobs')
+        .update({
+          title: job.title,
+          description: job.description,
+          location: job.location,
+          status: job.status,
+          priority: job.priority,
+          due_date: job.due_date,
+          estimated_hours: job.estimated_hours,
+          budget: job.budget,
+          notes: job.notes,
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', jobId)
+
+      if (error) {
+        console.error('Error saving job:', error)
+        alert('Failed to save changes')
+        return
+      }
+
+      setOriginalJob(JSON.parse(JSON.stringify(job)))
+      setHasChanges(false)
+      alert('Changes saved successfully!')
+    } catch (error) {
+      console.error('Error:', error)
+      alert('An error occurred while saving')
+    } finally {
+      setSaving(false)
     }
   }
 
@@ -154,26 +205,58 @@ export default function JobDetailPage() {
             Back to Jobs
           </Link>
           <div className="flex items-center justify-between mt-3">
-            <div>
-              <h1 className="text-5xl font-black text-white tracking-tight mb-2">{job.title}</h1>
+            <div className="flex-1">
+              <input
+                type="text"
+                value={job.title}
+                onChange={(e) => setJob({ ...job, title: e.target.value })}
+                className="text-5xl font-black text-white tracking-tight mb-2 bg-transparent border-b-2 border-transparent hover:border-primary/30 focus:border-primary focus:outline-none transition-all w-full"
+                placeholder="Job Title"
+              />
               <div className="flex items-center gap-3">
-                <span className={`px-4 py-1.5 rounded-full text-xs font-black uppercase tracking-wider border ${getStatusColor(job.status)}`}>
-                  {job.status.replace('_', ' ')}
-                </span>
-                <span className={`px-4 py-1.5 rounded-full text-xs font-black uppercase tracking-wider border ${getPriorityColor(job.priority)}`}>
-                  {job.priority}
-                </span>
+                <select
+                  value={job.status}
+                  onChange={(e) => setJob({ ...job, status: e.target.value as any })}
+                  className={`px-4 py-1.5 rounded-full text-xs font-black uppercase tracking-wider border cursor-pointer ${getStatusColor(job.status)} bg-transparent focus:outline-none focus:ring-2 focus:ring-primary/50`}
+                >
+                  <option value="pending">Pending</option>
+                  <option value="in_progress">In Progress</option>
+                  <option value="completed">Completed</option>
+                  <option value="cancelled">Cancelled</option>
+                </select>
+                <select
+                  value={job.priority}
+                  onChange={(e) => setJob({ ...job, priority: e.target.value as any })}
+                  className={`px-4 py-1.5 rounded-full text-xs font-black uppercase tracking-wider border cursor-pointer ${getPriorityColor(job.priority)} bg-transparent focus:outline-none focus:ring-2 focus:ring-primary/50`}
+                >
+                  <option value="low">Low</option>
+                  <option value="medium">Medium</option>
+                  <option value="high">High</option>
+                  <option value="urgent">Urgent</option>
+                </select>
               </div>
             </div>
-            <Link
-              href={`/dashboard/jobs/${jobId}/edit`}
-              className="px-8 py-4 bg-gradient-to-r from-primary via-primary to-accent hover:from-primary/90 hover:via-primary/90 hover:to-accent/90 text-white rounded-2xl font-black text-lg transition-all shadow-2xl shadow-primary/20 flex items-center gap-3"
-            >
-              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-              </svg>
-              EDIT JOB
-            </Link>
+            {hasChanges && (
+              <button
+                onClick={handleSave}
+                disabled={saving}
+                className="px-8 py-4 bg-gradient-to-r from-green-500 via-green-500 to-green-600 hover:from-green-600 hover:via-green-600 hover:to-green-700 disabled:from-gray-600 disabled:to-gray-700 text-white rounded-2xl font-black text-lg transition-all shadow-2xl shadow-green-500/20 flex items-center gap-3 disabled:cursor-not-allowed"
+              >
+                {saving ? (
+                  <>
+                    <div className="w-6 h-6 border-3 border-white/30 border-t-white rounded-full animate-spin"></div>
+                    SAVING...
+                  </>
+                ) : (
+                  <>
+                    <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" />
+                    </svg>
+                    SAVE CHANGES
+                  </>
+                )}
+              </button>
+            )}
           </div>
         </div>
       </div>
@@ -186,7 +269,13 @@ export default function JobDetailPage() {
             {/* Description */}
             <div className="bg-white/5 backdrop-blur-xl rounded-3xl border border-white/10 p-10">
               <h2 className="text-sm font-black text-primary uppercase tracking-widest mb-6">Job Description</h2>
-              <p className="text-gray-200 text-lg leading-relaxed whitespace-pre-wrap">{job.description}</p>
+              <textarea
+                value={job.description}
+                onChange={(e) => setJob({ ...job, description: e.target.value })}
+                rows={6}
+                className="w-full text-gray-200 text-lg leading-relaxed bg-transparent border border-white/10 rounded-2xl p-6 focus:outline-none focus:border-primary resize-none"
+                placeholder="Describe the job..."
+              />
             </div>
 
             {/* Job Details Grid */}
@@ -207,9 +296,13 @@ export default function JobDetailPage() {
                       <div className="text-xs text-gray-400 mt-0.5">Job site address</div>
                     </div>
                   </div>
-                  <div className="text-2xl font-black text-white">
-                    {job.location}
-                  </div>
+                  <input
+                    type="text"
+                    value={job.location}
+                    onChange={(e) => setJob({ ...job, location: e.target.value })}
+                    className="w-full text-2xl font-black text-white bg-transparent border-b-2 border-transparent hover:border-blue-400/30 focus:border-blue-400 focus:outline-none transition-all"
+                    placeholder="Enter location"
+                  />
                 </div>
               </div>
 
@@ -226,64 +319,79 @@ export default function JobDetailPage() {
                     <div className="text-xs text-gray-400 mt-0.5">Deadline</div>
                   </div>
                 </div>
-                <div className="text-2xl font-black text-white">
-                  {new Date(job.due_date).toLocaleDateString('en-GB', {
-                    day: 'numeric',
-                    month: 'long',
-                    year: 'numeric'
-                  })}
-                </div>
+                <input
+                  type="date"
+                  value={job.due_date.split('T')[0]}
+                  onChange={(e) => setJob({ ...job, due_date: e.target.value })}
+                  className="w-full text-2xl font-black text-white bg-transparent border-b-2 border-transparent hover:border-purple-400/30 focus:border-purple-400 focus:outline-none transition-all"
+                />
               </div>
 
               {/* Estimated Hours */}
-              {job.estimated_hours && (
-                <div className="bg-white/5 backdrop-blur-xl rounded-3xl border border-white/10 p-8">
-                  <div className="flex items-center gap-4 mb-6">
-                    <div className="w-14 h-14 bg-cyan-500/20 rounded-xl flex items-center justify-center">
-                      <svg className="w-7 h-7 text-cyan-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                      </svg>
-                    </div>
-                    <div>
-                      <div className="text-xs font-black text-cyan-400 uppercase tracking-widest">Est. Hours</div>
-                      <div className="text-xs text-gray-400 mt-0.5">Time estimate</div>
-                    </div>
+              <div className="bg-white/5 backdrop-blur-xl rounded-3xl border border-white/10 p-8">
+                <div className="flex items-center gap-4 mb-6">
+                  <div className="w-14 h-14 bg-cyan-500/20 rounded-xl flex items-center justify-center">
+                    <svg className="w-7 h-7 text-cyan-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
                   </div>
-                  <div className="text-2xl font-black text-white">
-                    {job.estimated_hours}h
+                  <div>
+                    <div className="text-xs font-black text-cyan-400 uppercase tracking-widest">Est. Hours</div>
+                    <div className="text-xs text-gray-400 mt-0.5">Time estimate</div>
                   </div>
                 </div>
-              )}
+                <div className="flex items-center gap-2">
+                  <input
+                    type="number"
+                    step="0.5"
+                    value={job.estimated_hours || ''}
+                    onChange={(e) => setJob({ ...job, estimated_hours: e.target.value ? parseFloat(e.target.value) : null })}
+                    className="flex-1 text-2xl font-black text-white bg-transparent border-b-2 border-transparent hover:border-cyan-400/30 focus:border-cyan-400 focus:outline-none transition-all"
+                    placeholder="0"
+                  />
+                  <span className="text-2xl font-black text-white">h</span>
+                </div>
+              </div>
 
               {/* Budget */}
-              {job.budget && (
-                <div className="relative overflow-hidden bg-gradient-to-br from-green-500/10 via-green-500/5 to-transparent rounded-3xl border border-green-500/20 p-8">
-                  <div className="absolute top-0 right-0 w-48 h-48 bg-green-500/10 rounded-full blur-3xl"></div>
-                  <div className="relative">
-                    <div className="flex items-center gap-4 mb-6">
-                      <div className="w-14 h-14 bg-green-500/20 rounded-xl flex items-center justify-center">
-                        <span className="text-3xl">💰</span>
-                      </div>
-                      <div>
-                        <div className="text-xs font-black text-green-400 uppercase tracking-widest">Budget</div>
-                        <div className="text-xs text-gray-400 mt-0.5">Allocated funds</div>
-                      </div>
+              <div className="relative overflow-hidden bg-gradient-to-br from-green-500/10 via-green-500/5 to-transparent rounded-3xl border border-green-500/20 p-8">
+                <div className="absolute top-0 right-0 w-48 h-48 bg-green-500/10 rounded-full blur-3xl"></div>
+                <div className="relative">
+                  <div className="flex items-center gap-4 mb-6">
+                    <div className="w-14 h-14 bg-green-500/20 rounded-xl flex items-center justify-center">
+                      <span className="text-3xl">💰</span>
                     </div>
-                    <div className="text-4xl font-black text-white">
-                      £{job.budget.toFixed(2)}
+                    <div>
+                      <div className="text-xs font-black text-green-400 uppercase tracking-widest">Budget</div>
+                      <div className="text-xs text-gray-400 mt-0.5">Allocated funds</div>
                     </div>
                   </div>
+                  <div className="flex items-center gap-2">
+                    <span className="text-4xl font-black text-white">£</span>
+                    <input
+                      type="number"
+                      step="0.01"
+                      value={job.budget || ''}
+                      onChange={(e) => setJob({ ...job, budget: e.target.value ? parseFloat(e.target.value) : null })}
+                      className="flex-1 text-4xl font-black text-white bg-transparent border-b-2 border-transparent hover:border-green-400/30 focus:border-green-400 focus:outline-none transition-all"
+                      placeholder="0.00"
+                    />
+                  </div>
                 </div>
-              )}
+              </div>
             </div>
 
             {/* Notes */}
-            {job.notes && (
-              <div className="bg-white/5 backdrop-blur-xl rounded-3xl border border-white/10 p-10">
-                <h2 className="text-sm font-black text-primary uppercase tracking-widest mb-6">Additional Notes</h2>
-                <p className="text-gray-200 text-lg leading-relaxed whitespace-pre-wrap">{job.notes}</p>
-              </div>
-            )}
+            <div className="bg-white/5 backdrop-blur-xl rounded-3xl border border-white/10 p-10">
+              <h2 className="text-sm font-black text-primary uppercase tracking-widest mb-6">Additional Notes</h2>
+              <textarea
+                value={job.notes || ''}
+                onChange={(e) => setJob({ ...job, notes: e.target.value })}
+                rows={4}
+                className="w-full text-gray-200 text-lg leading-relaxed bg-transparent border border-white/10 rounded-2xl p-6 focus:outline-none focus:border-primary resize-none"
+                placeholder="Add any additional notes..."
+              />
+            </div>
           </div>
 
           {/* Right Column - Team & Timeline (2/5) */}
@@ -308,25 +416,37 @@ export default function JobDetailPage() {
                     </svg>
                   </div>
                   <p className="text-gray-400 font-semibold">No employees assigned</p>
-                  <p className="text-gray-500 text-sm mt-1">Edit job to add team members</p>
+                  <Link
+                    href={`/dashboard/jobs/${jobId}/edit`}
+                    className="inline-block mt-4 text-primary hover:text-primary/80 text-sm font-bold"
+                  >
+                    Assign Team Members →
+                  </Link>
                 </div>
               ) : (
                 <div className="space-y-4">
                   {assignedEmployees.map((employee) => (
-                    <div
+                    <a
                       key={employee.id}
-                      className="bg-white/5 hover:bg-white/10 rounded-2xl p-5 border border-white/10 transition-all hover:border-primary/30"
+                      href={`mailto:${employee.email}`}
+                      className="block bg-white/5 hover:bg-white/10 rounded-2xl p-5 border border-white/10 transition-all hover:border-primary/30 cursor-pointer group"
                     >
                       <div className="flex items-center gap-4 mb-4">
-                        <div className="w-14 h-14 bg-gradient-to-br from-primary via-primary/90 to-accent rounded-xl flex items-center justify-center text-white font-black text-lg shadow-lg shadow-primary/20">
+                        <div className="w-14 h-14 bg-gradient-to-br from-primary via-primary/90 to-accent rounded-xl flex items-center justify-center text-white font-black text-lg shadow-lg shadow-primary/20 group-hover:shadow-primary/40 transition-all">
                           {employee.first_name[0]}{employee.last_name[0]}
                         </div>
                         <div className="flex-1 min-w-0">
-                          <p className="text-white font-black text-lg truncate">
+                          <p className="text-white font-black text-lg truncate group-hover:text-primary transition-colors">
                             {employee.first_name} {employee.last_name}
                           </p>
                           <p className="text-sm text-gray-400 truncate">{employee.email}</p>
+                          {employee.phone_number && (
+                            <p className="text-sm text-gray-500 truncate">{employee.phone_number}</p>
+                          )}
                         </div>
+                        <svg className="w-5 h-5 text-gray-500 group-hover:text-primary transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                        </svg>
                       </div>
                       <div className="flex items-center gap-2">
                         <svg className="w-4 h-4 text-blue-400" fill="currentColor" viewBox="0 0 20 20">
@@ -336,7 +456,7 @@ export default function JobDetailPage() {
                           {employee.role}
                         </span>
                       </div>
-                    </div>
+                    </a>
                   ))}
                 </div>
               )}
