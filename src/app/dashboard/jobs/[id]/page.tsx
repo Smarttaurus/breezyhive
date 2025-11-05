@@ -373,8 +373,8 @@ export default function JobDetailPage() {
 
             {/* Job Details Grid */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-              {/* Location */}
-              <div className="relative overflow-hidden bg-gradient-to-br from-blue-500/15 via-blue-500/5 to-transparent backdrop-blur-xl rounded-[2rem] border border-blue-500/30 p-10 shadow-2xl shadow-blue-500/10 hover:shadow-blue-500/20 transition-all group">
+              {/* Location - Full Width */}
+              <div className="md:col-span-2 relative overflow-hidden bg-gradient-to-br from-blue-500/15 via-blue-500/5 to-transparent backdrop-blur-xl rounded-[2rem] border border-blue-500/30 p-10 shadow-2xl shadow-blue-500/10 hover:shadow-blue-500/20 transition-all group">
                 <div className="absolute top-0 right-0 w-48 h-48 bg-blue-500/20 rounded-full blur-3xl group-hover:scale-150 transition-transform"></div>
                 <div className="relative">
                   <div className="flex items-center gap-4 mb-6">
@@ -385,16 +385,16 @@ export default function JobDetailPage() {
                       </svg>
                     </div>
                     <div>
-                      <div className="text-sm font-black text-blue-300 uppercase tracking-widest">Location</div>
-                      <div className="text-xs text-gray-400 mt-1">Job site address</div>
+                      <div className="text-sm font-black text-blue-300 uppercase tracking-widest">Full Address</div>
+                      <div className="text-xs text-gray-400 mt-1">Complete location details</div>
                     </div>
                   </div>
-                  <input
-                    type="text"
+                  <textarea
                     value={job.location || ''}
                     onChange={(e) => setJob({ ...job, location: e.target.value })}
-                    className="w-full text-2xl font-black text-white bg-transparent border-b-4 border-transparent hover:border-blue-400/40 focus:border-blue-400 focus:outline-none transition-all placeholder-gray-700"
-                    placeholder="No location set - click to add"
+                    rows={5}
+                    className="w-full text-lg font-bold text-white bg-black/20 border-2 border-white/10 rounded-2xl p-6 focus:outline-none focus:border-blue-400 focus:ring-4 focus:ring-blue-400/20 resize-none transition-all placeholder-gray-600 leading-relaxed"
+                    placeholder="Enter full address:&#10;House/Building Number&#10;Street Name&#10;City&#10;County/State&#10;Postcode/Zipcode&#10;Country"
                   />
                 </div>
               </div>
