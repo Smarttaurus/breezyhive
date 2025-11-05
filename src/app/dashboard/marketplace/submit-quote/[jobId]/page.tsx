@@ -252,18 +252,126 @@ export default function SubmitQuotePage() {
         </div>
       </div>
 
-      <main className="max-w-4xl mx-auto px-6 sm:px-8 py-12">
-        <form onSubmit={handleSubmit} className="space-y-6">
-          {/* Job Info Card */}
-          <div className="bg-primary/10 backdrop-blur-sm border border-primary/30 rounded-2xl p-6">
-            <div className="flex items-start gap-3 mb-3">
-              <span className="text-3xl">🛠️</span>
-              <div className="flex-1">
-                <h2 className="text-2xl font-bold text-white mb-2">{job.title}</h2>
-                <p className="text-gray-400 text-sm line-clamp-2">{job.description}</p>
+      <main className="max-w-6xl mx-auto px-6 sm:px-8 py-12">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+          {/* Left Column - Job Details */}
+          <div className="lg:col-span-2 space-y-6">
+            {/* Job Title & Description */}
+            <div className="bg-gradient-to-br from-primary/20 via-primary/10 to-transparent backdrop-blur-sm border border-primary/30 rounded-3xl p-8">
+              <div className="flex items-start gap-4 mb-6">
+                <div className="w-16 h-16 bg-gradient-to-br from-primary to-accent rounded-2xl flex items-center justify-center flex-shrink-0">
+                  <span className="text-3xl">🛠️</span>
+                </div>
+                <div className="flex-1">
+                  <div className="text-xs font-bold text-primary mb-2 uppercase tracking-wider">Job Title</div>
+                  <h2 className="text-3xl font-black text-white mb-3">{job.title}</h2>
+                  <div className="flex items-center gap-3">
+                    <span className={`px-3 py-1 rounded-lg text-xs font-bold ${
+                      job.urgency === 'urgent' ? 'bg-red-500/20 text-red-300 border border-red-500/30' :
+                      job.urgency === 'high' ? 'bg-orange-500/20 text-orange-300 border border-orange-500/30' :
+                      'bg-blue-500/20 text-blue-300 border border-blue-500/30'
+                    }`}>
+                      {job.urgency.toUpperCase()}
+                    </span>
+                    <span className="px-3 py-1 rounded-lg text-xs font-bold bg-purple-500/20 text-purple-300 border border-purple-500/30">
+                      {job.category}
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              <div className="bg-white/5 rounded-2xl p-6 border border-white/10">
+                <div className="text-xs font-bold text-gray-400 mb-3 uppercase tracking-wider">Description</div>
+                <p className="text-gray-200 leading-relaxed whitespace-pre-wrap">{job.description}</p>
+              </div>
+            </div>
+
+            {/* Budget & Location */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {/* Budget */}
+              {(job.budget_min || job.budget_max) && (
+                <div className="bg-gradient-to-br from-green-600/10 via-green-500/5 to-transparent backdrop-blur-sm border border-green-500/30 rounded-2xl p-6">
+                  <div className="flex items-center gap-3 mb-4">
+                    <div className="w-12 h-12 bg-green-500/20 rounded-xl flex items-center justify-center">
+                      <span className="text-2xl">💰</span>
+                    </div>
+                    <div>
+                      <div className="text-xs font-bold text-green-400 uppercase tracking-wider">Customer Budget</div>
+                      <div className="text-sm text-gray-400">What they expect to pay</div>
+                    </div>
+                  </div>
+                  <div className="text-3xl font-black text-white">
+                    £{job.budget_min || 0} - £{job.budget_max || 0}
+                  </div>
+                  <p className="text-xs text-gray-500 mt-2">You can quote above or below this range</p>
+                </div>
+              )}
+
+              {/* Location */}
+              <div className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-2xl p-6">
+                <div className="flex items-center gap-3 mb-4">
+                  <div className="w-12 h-12 bg-blue-500/20 rounded-xl flex items-center justify-center">
+                    <svg className="w-6 h-6 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                    </svg>
+                  </div>
+                  <div>
+                    <div className="text-xs font-bold text-blue-400 uppercase tracking-wider">Location (Approximate)</div>
+                    <div className="text-sm text-gray-400">For privacy, exact address shown after acceptance</div>
+                  </div>
+                </div>
+                <div className="space-y-2">
+                  <div className="flex items-center gap-2">
+                    <svg className="w-4 h-4 text-gray-500" fill="currentColor" viewBox="0 0 20 20">
+                      <path fillRule="evenodd" d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z" clipRule="evenodd" />
+                    </svg>
+                    <span className="text-white font-semibold">{job.city || 'City'}</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <svg className="w-4 h-4 text-gray-500" fill="currentColor" viewBox="0 0 20 20">
+                      <path d="M2 5a2 2 0 012-2h7a2 2 0 012 2v4a2 2 0 01-2 2H9l-3 3v-3H4a2 2 0 01-2-2V5z" />
+                      <path d="M15 7v2a4 4 0 01-4 4H9.828l-1.766 1.767c.28.149.599.233.938.233h2l3 3v-3h2a2 2 0 002-2V9a2 2 0 00-2-2h-1z" />
+                    </svg>
+                    <span className="text-gray-400">{job.postcode || 'Postcode area'}</span>
+                  </div>
+                  <div className="bg-yellow-500/10 border border-yellow-500/30 rounded-lg p-3 mt-3">
+                    <div className="flex items-start gap-2">
+                      <svg className="w-4 h-4 text-yellow-400 flex-shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
+                        <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
+                      </svg>
+                      <p className="text-yellow-400 text-xs font-semibold">
+                        Exact address revealed only after quote acceptance for privacy
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Posted Date */}
+            <div className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-2xl p-6">
+              <div className="flex items-center gap-3">
+                <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                </svg>
+                <div>
+                  <div className="text-xs font-bold text-gray-400 uppercase tracking-wider">Posted</div>
+                  <div className="text-white font-semibold">
+                    {new Date(job.created_at).toLocaleDateString('en-GB', {
+                      day: 'numeric',
+                      month: 'long',
+                      year: 'numeric'
+                    })}
+                  </div>
+                </div>
               </div>
             </div>
           </div>
+
+          {/* Right Column - Quote Form */}
+          <div className="lg:col-span-1">
+            <form onSubmit={handleSubmit} className="space-y-6 sticky top-24">
 
           {/* Quote Form */}
           <div className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-2xl p-8">
@@ -465,7 +573,9 @@ export default function SubmitQuotePage() {
           <p className="text-gray-500 text-sm text-center">
             By submitting this quote, you agree to BreezyHive's Terms of Service and commit to completing the job as described if your quote is accepted.
           </p>
-        </form>
+            </form>
+          </div>
+        </div>
       </main>
     </div>
   )
