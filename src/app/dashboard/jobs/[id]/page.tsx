@@ -106,26 +106,23 @@ export default function JobDetailPage() {
         setAllEmployees(allEmployeesData)
       }
 
-      // Load assigned employees
-      const { data: assignmentsData } = await supabase
+      // Load assigned employees - get assignment IDs first
+      const { data: assignmentsData, error: assignmentsError } = await supabase
         .from('enterprise_job_assignments')
-        .select(`
-          employee_id,
-          enterprise_employees (
-            id,
-            first_name,
-            last_name,
-            email,
-            role,
-            phone_number
-          )
-        `)
+        .select('employee_id')
         .eq('job_id', jobId)
 
-      if (assignmentsData) {
-        const employees = assignmentsData
-          .map((a: any) => a.enterprise_employees)
-          .filter(Boolean)
+      console.log('Assignments data:', assignmentsData)
+      console.log('Assignments error:', assignmentsError)
+
+      if (assignmentsData && allEmployeesData) {
+        const assignedEmployeeIds = assignmentsData.map((a: any) => a.employee_id)
+        console.log('Assigned employee IDs:', assignedEmployeeIds)
+
+        const employees = allEmployeesData.filter((emp: Employee) =>
+          assignedEmployeeIds.includes(emp.id)
+        )
+        console.log('Filtered assigned employees:', employees)
         setAssignedEmployees(employees)
       }
 
