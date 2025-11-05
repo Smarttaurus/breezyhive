@@ -265,7 +265,18 @@ export default function DashboardPage() {
         // Stagger requests slightly to avoid rate limiting
         await new Promise(resolve => setTimeout(resolve, index * 200))
 
-        const coords = await geocodeAddress(job.location, job.location, 'GB', 0)
+        // Parse multi-line location format:
+        // Line 0: Street Address
+        // Line 1: City
+        // Line 2: County/State
+        // Line 3: Postcode/ZIP
+        // Line 4: Country
+        const locationLines = job.location.split('\n').filter(line => line.trim())
+        const postcode = locationLines[3] || ''
+        const country = locationLines[4] || 'GB'
+        const fullAddress = locationLines.join(', ')
+
+        const coords = await geocodeAddress(fullAddress, postcode, country, 0)
 
         if (!coords) {
           console.warn(`⚠️ Failed to geocode enterprise job "${job.title}" with location "${job.location}"`)
