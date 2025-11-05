@@ -86,7 +86,7 @@ export default function CreateJobPage() {
 
     if (!formData.title.trim()) newErrors.title = 'Job title is required'
     if (!formData.description.trim()) newErrors.description = 'Description is required'
-    // Location is now optional
+    if (!formData.location.trim()) newErrors.location = 'Location is required'
     if (!formData.dueDate) newErrors.dueDate = 'Due date is required'
 
     setErrors(newErrors)
@@ -253,7 +253,7 @@ export default function CreateJobPage() {
 
               <div>
                 <label className="block text-sm font-semibold text-white mb-2">
-                  Location <span className="text-gray-500 text-xs">(optional)</span>
+                  Location <span className="text-red-400">*</span>
                 </label>
                 <input
                   type="text"
