@@ -220,12 +220,12 @@ export default function MarketplacePage() {
                   <div className="text-xs text-gray-500 mb-3">
                     Posted {new Date(job.created_at).toLocaleDateString()}
                   </div>
-                  <button
-                    onClick={() => setSelectedJob(job)}
-                    className="w-full px-4 py-2 bg-primary hover:bg-primary/90 text-white rounded-lg font-semibold transition-all"
+                  <Link
+                    href={`/dashboard/marketplace/submit-quote/${job.id}`}
+                    className="block w-full px-4 py-2 bg-primary hover:bg-primary/90 text-white rounded-lg font-semibold transition-all text-center"
                   >
                     View Details
-                  </button>
+                  </Link>
                 </div>
               </div>
             ))}
