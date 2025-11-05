@@ -252,17 +252,106 @@ export default function CreateJobPage() {
               </div>
 
               <div>
-                <label className="block text-sm font-semibold text-white mb-2">
-                  Location <span className="text-red-400">*</span>
+                <label className="block text-sm font-semibold text-white mb-4">
+                  Full Address <span className="text-red-400">*</span>
                 </label>
-                <input
-                  type="text"
-                  value={formData.location}
-                  onChange={(e) => setFormData({ ...formData, location: e.target.value })}
-                  className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:border-primary"
-                  placeholder="e.g. 42 Oak Street, London, SW1A 1AA"
-                />
-                {errors.location && <p className="text-red-400 text-sm mt-1">{errors.location}</p>}
+
+                <div className="space-y-4">
+                  <div>
+                    <div className="text-xs font-bold text-primary uppercase tracking-wider mb-2 flex items-center gap-2">
+                      <div className="w-1.5 h-1.5 rounded-full bg-primary"></div>
+                      Street Address
+                    </div>
+                    <input
+                      type="text"
+                      value={formData.location.split('\n')[0] || ''}
+                      onChange={(e) => {
+                        const lines = formData.location.split('\n')
+                        lines[0] = e.target.value
+                        setFormData({ ...formData, location: lines.join('\n') })
+                      }}
+                      className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:border-primary"
+                      placeholder="e.g. 123 Main Street"
+                    />
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <div className="text-xs font-bold text-primary uppercase tracking-wider mb-2 flex items-center gap-2">
+                        <div className="w-1.5 h-1.5 rounded-full bg-primary"></div>
+                        City
+                      </div>
+                      <input
+                        type="text"
+                        value={formData.location.split('\n')[1] || ''}
+                        onChange={(e) => {
+                          const lines = formData.location.split('\n')
+                          lines[1] = e.target.value
+                          setFormData({ ...formData, location: lines.join('\n') })
+                        }}
+                        className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:border-primary"
+                        placeholder="e.g. London"
+                      />
+                    </div>
+
+                    <div>
+                      <div className="text-xs font-bold text-primary uppercase tracking-wider mb-2 flex items-center gap-2">
+                        <div className="w-1.5 h-1.5 rounded-full bg-primary"></div>
+                        County/State
+                      </div>
+                      <input
+                        type="text"
+                        value={formData.location.split('\n')[2] || ''}
+                        onChange={(e) => {
+                          const lines = formData.location.split('\n')
+                          lines[2] = e.target.value
+                          setFormData({ ...formData, location: lines.join('\n') })
+                        }}
+                        className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:border-primary"
+                        placeholder="e.g. Greater London"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <div className="text-xs font-bold text-primary uppercase tracking-wider mb-2 flex items-center gap-2">
+                        <div className="w-1.5 h-1.5 rounded-full bg-primary"></div>
+                        Postcode/ZIP Code
+                      </div>
+                      <input
+                        type="text"
+                        value={formData.location.split('\n')[3] || ''}
+                        onChange={(e) => {
+                          const lines = formData.location.split('\n')
+                          lines[3] = e.target.value
+                          setFormData({ ...formData, location: lines.join('\n') })
+                        }}
+                        className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:border-primary"
+                        placeholder="e.g. SW1A 1AA"
+                      />
+                    </div>
+
+                    <div>
+                      <div className="text-xs font-bold text-primary uppercase tracking-wider mb-2 flex items-center gap-2">
+                        <div className="w-1.5 h-1.5 rounded-full bg-primary"></div>
+                        Country
+                      </div>
+                      <input
+                        type="text"
+                        value={formData.location.split('\n')[4] || ''}
+                        onChange={(e) => {
+                          const lines = formData.location.split('\n')
+                          lines[4] = e.target.value
+                          setFormData({ ...formData, location: lines.join('\n') })
+                        }}
+                        className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:border-primary"
+                        placeholder="e.g. United Kingdom"
+                      />
+                    </div>
+                  </div>
+                </div>
+                {errors.location && <p className="text-red-400 text-sm mt-2">{errors.location}</p>}
               </div>
             </div>
           </div>
