@@ -394,7 +394,13 @@ export default function JobDetailPage() {
                     onChange={(e) => setJob({ ...job, location: e.target.value })}
                     rows={5}
                     className="w-full text-lg font-bold text-white bg-black/20 border-2 border-white/10 rounded-2xl p-6 focus:outline-none focus:border-blue-400 focus:ring-4 focus:ring-blue-400/20 resize-none transition-all placeholder-gray-600 leading-relaxed"
-                    placeholder="Enter full address:&#10;House/Building Number&#10;Street Name&#10;City&#10;County/State&#10;Postcode/Zipcode&#10;Country"
+                    placeholder="Enter full address (each line):
+House/Building Number
+Street Name
+City
+County/State
+Postcode/Zipcode
+Country"
                   />
                 </div>
               </div>
