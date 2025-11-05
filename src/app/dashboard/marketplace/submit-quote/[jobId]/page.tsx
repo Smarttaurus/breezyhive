@@ -395,17 +395,17 @@ export default function SubmitQuotePage() {
                   <label className="block text-xs font-black text-gray-400 uppercase tracking-widest mb-3">
                     Estimated Duration *
                   </label>
-                  <div className="flex items-center gap-4">
+                  <div className="relative">
                     <input
                       type="number"
                       min="1"
                       value={estimatedDays}
                       onChange={(e) => setEstimatedDays(e.target.value)}
-                      className="flex-1 px-6 py-5 bg-white/5 border border-white/10 rounded-2xl text-2xl font-black text-white placeholder-gray-600 focus:outline-none focus:border-primary transition-all"
+                      className="w-full px-6 py-5 pr-24 bg-white/5 border border-white/10 rounded-2xl text-2xl font-black text-white placeholder-gray-600 focus:outline-none focus:border-primary transition-all"
                       placeholder="0"
                       required
                     />
-                    <span className="text-gray-400 font-black text-xl">DAYS</span>
+                    <span className="absolute right-6 top-1/2 -translate-y-1/2 text-gray-400 font-black text-sm uppercase tracking-wider">DAYS</span>
                   </div>
                   {errors.estimatedDays && <p className="text-red-400 text-xs mt-2 font-semibold">{errors.estimatedDays}</p>}
                 </div>
