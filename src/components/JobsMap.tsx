@@ -20,9 +20,10 @@ interface Job {
 interface JobsMapProps {
   jobs: Job[]
   height?: string
+  onJobClick?: (jobId: string, source: 'enterprise' | 'marketplace') => void
 }
 
-export default function JobsMap({ jobs, height = '500px' }: JobsMapProps) {
+export default function JobsMap({ jobs, height = '500px', onJobClick }: JobsMapProps) {
   const mapContainer = useRef<HTMLDivElement>(null)
   const map = useRef<mapboxgl.Map | null>(null)
   const markers = useRef<mapboxgl.Marker[]>([])
@@ -148,10 +149,18 @@ export default function JobsMap({ jobs, height = '500px' }: JobsMapProps) {
               <div class="text-gray-400">${job.city}</div>
               <div class="text-gray-400">${job.category}</div>
               ${job.budget_min && job.budget_max ? `<div class="text-green-400 font-semibold mt-1">£${job.budget_min} - £${job.budget_max}</div>` : ''}
+              <div class="text-blue-400 text-xs mt-2">Click to view details →</div>
             </div>
           </div>
         </div>
       `
+
+      // Add click handler
+      el.addEventListener('click', () => {
+        if (onJobClick) {
+          onJobClick(job.id, job.source || 'enterprise')
+        }
+      })
 
       const marker = new mapboxgl.Marker(el)
         .setLngLat([job.location_longitude, job.location_latitude])

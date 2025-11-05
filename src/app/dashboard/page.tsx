@@ -141,6 +141,15 @@ export default function DashboardPage() {
     setCategoryFilter(category)
   }
 
+  const handleJobClick = (jobId: string, source: 'enterprise' | 'marketplace') => {
+    // Navigate to appropriate job details page
+    if (source === 'marketplace') {
+      router.push(`/dashboard/marketplace/submit-quote/${jobId}`)
+    } else {
+      router.push(`/dashboard/jobs/${jobId}`)
+    }
+  }
+
   const checkAuth = async () => {
     try {
       const { data: { user } } = await supabase.auth.getUser()
@@ -158,11 +167,18 @@ export default function DashboardPage() {
   }
 
   // Simple geocoding using Nominatim (OpenStreetMap) - free, no API key needed
-  const geocodeAddress = async (address: string, postcode: string, country: string = 'GB') => {
+  const geocodeAddress = async (address: string, postcode: string, country: string = 'GB', delay: number = 0) => {
     try {
+      // Add delay for rate limiting (Nominatim requires 1 second between requests)
+      if (delay > 0) {
+        await new Promise(resolve => setTimeout(resolve, delay))
+      }
+
       // Use postcode for more accurate results
       const query = postcode || address
       const countryCode = country === 'United States' ? 'US' : country
+
+      console.log(`Geocoding: "${query}" (country: ${countryCode})`)
 
       const response = await fetch(
         `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&countrycodes=${countryCode}&limit=1`,
@@ -176,13 +192,16 @@ export default function DashboardPage() {
       const data = await response.json()
 
       if (data && data.length > 0) {
+        console.log(`✅ Geocoded "${query}" to ${data[0].lat}, ${data[0].lon}`)
         return {
           latitude: parseFloat(data[0].lat),
           longitude: parseFloat(data[0].lon)
         }
+      } else {
+        console.warn(`❌ No results for "${query}"`)
       }
     } catch (error) {
-      console.error('Geocoding error:', error)
+      console.error(`❌ Geocoding error for "${postcode || address}":`, error)
     }
     return null
   }
@@ -236,31 +255,39 @@ export default function DashboardPage() {
       console.log('Enterprise jobs raw:', enterpriseJobsData)
       console.log('Enterprise jobs error:', enterpriseError)
 
-      // Enterprise jobs: geocode the location text field
-      const enterpriseJobsWithCoords = await Promise.all(
-        (enterpriseJobsData || []).map(async (job) => {
-          if (!job.location) return null
+      // Enterprise jobs: geocode the location text field sequentially with rate limiting
+      const enterpriseJobsWithCoords: any[] = []
+      for (let i = 0; i < (enterpriseJobsData || []).length; i++) {
+        const job = enterpriseJobsData![i]
 
-          const coords = await geocodeAddress(job.location, job.location, 'GB')
-          if (!coords) return null
+        if (!job.location) {
+          console.warn(`⚠️ Enterprise job "${job.title}" has no location`)
+          continue
+        }
 
-          return {
-            id: job.id,
-            title: job.title,
-            location_latitude: coords.latitude,
-            location_longitude: coords.longitude,
-            city: job.location,
-            category: 'General', // enterprise jobs don't have category
-            status: job.status,
-            budget_min: parseFloat(job.budget) || 0,
-            budget_max: parseFloat(job.budget) || 0,
-            source: 'enterprise' as const
-          }
+        const coords = await geocodeAddress(job.location, job.location, 'GB', i * 1100) // 1.1 second delay between requests
+
+        if (!coords) {
+          console.warn(`⚠️ Failed to geocode enterprise job "${job.title}" with location "${job.location}"`)
+          continue
+        }
+
+        enterpriseJobsWithCoords.push({
+          id: job.id,
+          title: job.title,
+          location_latitude: coords.latitude,
+          location_longitude: coords.longitude,
+          city: job.location,
+          category: 'General', // enterprise jobs don't have category
+          status: job.status,
+          budget_min: parseFloat(job.budget) || 0,
+          budget_max: parseFloat(job.budget) || 0,
+          source: 'enterprise' as const
         })
-      )
+      }
 
-      const validEnterpriseJobs = enterpriseJobsWithCoords.filter(job => job !== null)
-      console.log('Enterprise jobs geocoded:', validEnterpriseJobs)
+      console.log(`✅ Enterprise jobs geocoded: ${enterpriseJobsWithCoords.length} out of ${(enterpriseJobsData || []).length}`)
+      console.log('Enterprise jobs with coords:', enterpriseJobsWithCoords)
 
       // Load marketplace jobs (public jobs from customers)
       const { data: marketplaceJobsData, error: marketplaceError } = await supabase
@@ -271,56 +298,68 @@ export default function DashboardPage() {
       console.log('Marketplace jobs raw:', marketplaceJobsData)
       console.log('Marketplace jobs error:', marketplaceError)
 
-      // Marketplace jobs: geocode using postcode or location_address
-      const marketplaceJobsWithCoords = await Promise.all(
-        (marketplaceJobsData || []).map(async (job) => {
-          // Skip if already has coordinates
-          if (job.location_latitude && job.location_longitude) {
-            return {
-              id: job.id,
-              title: job.title,
-              location_latitude: parseFloat(job.location_latitude),
-              location_longitude: parseFloat(job.location_longitude),
-              city: job.city || job.postcode,
-              category: job.category,
-              status: job.status,
-              budget_min: parseFloat(job.budget_min) || 0,
-              budget_max: parseFloat(job.budget_max) || 0,
-              source: 'marketplace' as const
-            }
-          }
+      // Marketplace jobs: geocode using postcode or location_address sequentially
+      const marketplaceJobsWithCoords: any[] = []
+      const startDelay = (enterpriseJobsData || []).length * 1100 // Continue delay from enterprise jobs
 
-          // Geocode using postcode or address
-          if (!job.postcode && !job.location_address) return null
+      for (let i = 0; i < (marketplaceJobsData || []).length; i++) {
+        const job = marketplaceJobsData![i]
 
-          const coords = await geocodeAddress(
-            job.location_address || '',
-            job.postcode || '',
-            job.country || 'GB'
-          )
-
-          if (!coords) return null
-
-          return {
+        // Skip if already has coordinates
+        if (job.location_latitude && job.location_longitude) {
+          marketplaceJobsWithCoords.push({
             id: job.id,
             title: job.title,
-            location_latitude: coords.latitude,
-            location_longitude: coords.longitude,
+            location_latitude: parseFloat(job.location_latitude),
+            location_longitude: parseFloat(job.location_longitude),
             city: job.city || job.postcode,
             category: job.category,
             status: job.status,
             budget_min: parseFloat(job.budget_min) || 0,
             budget_max: parseFloat(job.budget_max) || 0,
             source: 'marketplace' as const
-          }
-        })
-      )
+          })
+          console.log(`✅ Marketplace job "${job.title}" already has coordinates`)
+          continue
+        }
 
-      const validMarketplaceJobs = marketplaceJobsWithCoords.filter(job => job !== null)
-      console.log('Marketplace jobs geocoded:', validMarketplaceJobs)
+        // Geocode using postcode or address
+        if (!job.postcode && !job.location_address) {
+          console.warn(`⚠️ Marketplace job "${job.title}" has no postcode or address`)
+          continue
+        }
+
+        const coords = await geocodeAddress(
+          job.location_address || '',
+          job.postcode || '',
+          job.country || 'GB',
+          startDelay + (i * 1100)
+        )
+
+        if (!coords) {
+          console.warn(`⚠️ Failed to geocode marketplace job "${job.title}" with postcode "${job.postcode}"`)
+          continue
+        }
+
+        marketplaceJobsWithCoords.push({
+          id: job.id,
+          title: job.title,
+          location_latitude: coords.latitude,
+          location_longitude: coords.longitude,
+          city: job.city || job.postcode,
+          category: job.category,
+          status: job.status,
+          budget_min: parseFloat(job.budget_min) || 0,
+          budget_max: parseFloat(job.budget_max) || 0,
+          source: 'marketplace' as const
+        })
+      }
+
+      console.log(`✅ Marketplace jobs geocoded: ${marketplaceJobsWithCoords.length} out of ${(marketplaceJobsData || []).length}`)
+      console.log('Marketplace jobs with coords:', marketplaceJobsWithCoords)
 
       // Combine both job sources
-      const allJobs = [...validEnterpriseJobs, ...validMarketplaceJobs]
+      const allJobs = [...enterpriseJobsWithCoords, ...marketplaceJobsWithCoords]
 
       console.log('All jobs combined:', allJobs)
 
@@ -377,7 +416,7 @@ export default function DashboardPage() {
 
       {/* Full Screen Map Background - INTERACTIVE */}
       <div className="fixed inset-0 ml-64 z-0">
-        <JobsMapDynamic jobs={filteredJobs} height="100vh" />
+        <JobsMapDynamic jobs={filteredJobs} height="100vh" onJobClick={handleJobClick} />
       </div>
 
       {/* Compact Floating Stats - Top */}
