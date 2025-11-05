@@ -386,36 +386,103 @@ export default function JobDetailPage() {
                     </div>
                     <div>
                       <div className="text-sm font-black text-blue-300 uppercase tracking-widest">Full Address</div>
-                      <div className="text-xs text-gray-400 mt-1">Complete location details</div>
+                      <div className="text-xs text-gray-400 mt-1">Complete location details - enter each line</div>
                     </div>
                   </div>
-                  <textarea
-                    value={job.location || ''}
-                    onChange={(e) => setJob({ ...job, location: e.target.value })}
-                    rows={7}
-                    className="w-full text-lg font-bold text-white bg-black/20 border-2 border-white/10 rounded-2xl p-6 focus:outline-none focus:border-blue-400 focus:ring-4 focus:ring-blue-400/20 resize-none transition-all placeholder-gray-500 leading-loose"
-                    placeholder="Line 1: House/Building Number & Street Name&#10;Line 2: City&#10;Line 3: County/State&#10;Line 4: Postcode/ZIP Code&#10;Line 5: Country"
-                  />
-                  <div className="mt-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-                    <div className="flex items-center gap-2 text-xs text-gray-400">
-                      <div className="w-1 h-1 rounded-full bg-blue-400"></div>
-                      <span>Line 1: Street Address</span>
+
+                  <div className="space-y-4">
+                    <div>
+                      <div className="text-xs font-bold text-blue-300 uppercase tracking-wider mb-2 flex items-center gap-2">
+                        <div className="w-1.5 h-1.5 rounded-full bg-blue-400"></div>
+                        Street Address
+                      </div>
+                      <input
+                        type="text"
+                        value={(job.location || '').split('\n')[0] || ''}
+                        onChange={(e) => {
+                          const lines = (job.location || '').split('\n')
+                          lines[0] = e.target.value
+                          setJob({ ...job, location: lines.join('\n') })
+                        }}
+                        className="w-full px-4 py-3 bg-black/20 border-2 border-white/10 rounded-xl text-white font-bold placeholder-gray-600 focus:outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-400/20 transition-all"
+                        placeholder="e.g. 123 Main Street"
+                      />
                     </div>
-                    <div className="flex items-center gap-2 text-xs text-gray-400">
-                      <div className="w-1 h-1 rounded-full bg-blue-400"></div>
-                      <span>Line 2: City</span>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div>
+                        <div className="text-xs font-bold text-blue-300 uppercase tracking-wider mb-2 flex items-center gap-2">
+                          <div className="w-1.5 h-1.5 rounded-full bg-blue-400"></div>
+                          City
+                        </div>
+                        <input
+                          type="text"
+                          value={(job.location || '').split('\n')[1] || ''}
+                          onChange={(e) => {
+                            const lines = (job.location || '').split('\n')
+                            lines[1] = e.target.value
+                            setJob({ ...job, location: lines.join('\n') })
+                          }}
+                          className="w-full px-4 py-3 bg-black/20 border-2 border-white/10 rounded-xl text-white font-bold placeholder-gray-600 focus:outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-400/20 transition-all"
+                          placeholder="e.g. London"
+                        />
+                      </div>
+
+                      <div>
+                        <div className="text-xs font-bold text-blue-300 uppercase tracking-wider mb-2 flex items-center gap-2">
+                          <div className="w-1.5 h-1.5 rounded-full bg-blue-400"></div>
+                          County/State
+                        </div>
+                        <input
+                          type="text"
+                          value={(job.location || '').split('\n')[2] || ''}
+                          onChange={(e) => {
+                            const lines = (job.location || '').split('\n')
+                            lines[2] = e.target.value
+                            setJob({ ...job, location: lines.join('\n') })
+                          }}
+                          className="w-full px-4 py-3 bg-black/20 border-2 border-white/10 rounded-xl text-white font-bold placeholder-gray-600 focus:outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-400/20 transition-all"
+                          placeholder="e.g. Greater London"
+                        />
+                      </div>
                     </div>
-                    <div className="flex items-center gap-2 text-xs text-gray-400">
-                      <div className="w-1 h-1 rounded-full bg-blue-400"></div>
-                      <span>Line 3: County/State</span>
-                    </div>
-                    <div className="flex items-center gap-2 text-xs text-gray-400">
-                      <div className="w-1 h-1 rounded-full bg-blue-400"></div>
-                      <span>Line 4: Postcode/ZIP</span>
-                    </div>
-                    <div className="flex items-center gap-2 text-xs text-gray-400">
-                      <div className="w-1 h-1 rounded-full bg-blue-400"></div>
-                      <span>Line 5: Country</span>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div>
+                        <div className="text-xs font-bold text-blue-300 uppercase tracking-wider mb-2 flex items-center gap-2">
+                          <div className="w-1.5 h-1.5 rounded-full bg-blue-400"></div>
+                          Postcode/ZIP Code
+                        </div>
+                        <input
+                          type="text"
+                          value={(job.location || '').split('\n')[3] || ''}
+                          onChange={(e) => {
+                            const lines = (job.location || '').split('\n')
+                            lines[3] = e.target.value
+                            setJob({ ...job, location: lines.join('\n') })
+                          }}
+                          className="w-full px-4 py-3 bg-black/20 border-2 border-white/10 rounded-xl text-white font-bold placeholder-gray-600 focus:outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-400/20 transition-all"
+                          placeholder="e.g. SW1A 1AA"
+                        />
+                      </div>
+
+                      <div>
+                        <div className="text-xs font-bold text-blue-300 uppercase tracking-wider mb-2 flex items-center gap-2">
+                          <div className="w-1.5 h-1.5 rounded-full bg-blue-400"></div>
+                          Country
+                        </div>
+                        <input
+                          type="text"
+                          value={(job.location || '').split('\n')[4] || ''}
+                          onChange={(e) => {
+                            const lines = (job.location || '').split('\n')
+                            lines[4] = e.target.value
+                            setJob({ ...job, location: lines.join('\n') })
+                          }}
+                          className="w-full px-4 py-3 bg-black/20 border-2 border-white/10 rounded-xl text-white font-bold placeholder-gray-600 focus:outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-400/20 transition-all"
+                          placeholder="e.g. United Kingdom"
+                        />
+                      </div>
                     </div>
                   </div>
                 </div>
