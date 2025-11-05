@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from 'react'
 import mapboxgl from 'mapbox-gl'
 import 'mapbox-gl/dist/mapbox-gl.css'
+import { getApproximateLocation, extractCountryFromLocation } from '@/utils/locationUtils'
 
 interface Job {
   id: string
@@ -137,6 +138,16 @@ export default function JobsMap({ jobs, height = '500px', onJobClick }: JobsMapP
       const sourceLabel = job.source === 'marketplace' ? 'Marketplace' : 'My Job'
       const sourceColor = job.source === 'marketplace' ? 'text-orange-400' : 'text-blue-400'
 
+      // For marketplace jobs, show approximate location only (privacy)
+      // For enterprise jobs, show full location
+      const displayLocation = job.source === 'marketplace'
+        ? getApproximateLocation(job.city, extractCountryFromLocation(job.city))
+        : job.city
+
+      const privacyNotice = job.source === 'marketplace'
+        ? '<div class="text-gray-500 text-xs mt-1">📍 Approximate area only</div>'
+        : ''
+
       el.innerHTML = `
         <div class="relative group cursor-pointer">
           <div class="w-10 h-10 rounded-full bg-gradient-to-br ${markerColor} border-4 border-white/20 shadow-lg flex items-center justify-center text-white font-bold text-sm animate-pulse hover:scale-125 transition-transform">
@@ -146,7 +157,8 @@ export default function JobsMap({ jobs, height = '500px', onJobClick }: JobsMapP
             <div class="bg-gray-900 text-white text-xs rounded-lg p-3 shadow-xl border border-white/10 min-w-[200px]">
               <div class="font-bold mb-1">${job.title}</div>
               <div class="${sourceColor} text-xs font-semibold mb-1">${sourceLabel}</div>
-              <div class="text-gray-400">${job.city}</div>
+              <div class="text-gray-400">${displayLocation}</div>
+              ${privacyNotice}
               <div class="text-gray-400">${job.category}</div>
               ${job.budget_min && job.budget_max ? `<div class="text-green-400 font-semibold mt-1">£${job.budget_min} - £${job.budget_max}</div>` : ''}
               <div class="text-blue-400 text-xs mt-2">Click to view details →</div>

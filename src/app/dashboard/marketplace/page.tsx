@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react'
 import { supabase } from '@/lib/supabase'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
+import { getApproximateLocation } from '@/utils/locationUtils'
 
 interface PublicJob {
   id: string
@@ -12,6 +13,7 @@ interface PublicJob {
   location_address: string
   city: string
   postcode: string
+  country?: string
   budget_min: number | null
   budget_max: number | null
   category: string
@@ -51,6 +53,7 @@ export default function MarketplacePage() {
           location_address,
           city,
           postcode,
+          country,
           budget_min,
           budget_max,
           category,
@@ -200,7 +203,8 @@ export default function MarketplacePage() {
                 <div className="space-y-2 mb-4">
                   <div className="flex items-center gap-2 text-sm text-gray-300">
                     <span>📍</span>
-                    <span>{job.city || job.location_address || 'Location not specified'}</span>
+                    <span>{getApproximateLocation(job.postcode, job.country || 'GB')}</span>
+                    <span className="text-xs text-gray-500">(Approximate area)</span>
                   </div>
                   <div className="flex items-center gap-2 text-sm text-gray-300">
                     <span>🏷️</span>
@@ -274,12 +278,9 @@ export default function MarketplacePage() {
               {/* Details Grid */}
               <div className="grid grid-cols-2 gap-4">
                 <div className="bg-white/5 rounded-xl p-4 border border-white/10">
-                  <div className="text-xs text-gray-400 mb-1">Location</div>
-                  <div className="text-white font-semibold">{selectedJob.city || selectedJob.location_address || 'Not specified'}</div>
-                </div>
-                <div className="bg-white/5 rounded-xl p-4 border border-white/10">
-                  <div className="text-xs text-gray-400 mb-1">Postcode</div>
-                  <div className="text-white font-semibold">{selectedJob.postcode || 'Not specified'}</div>
+                  <div className="text-xs text-gray-400 mb-1">Location (Approximate)</div>
+                  <div className="text-white font-semibold">{getApproximateLocation(selectedJob.postcode, selectedJob.country || 'GB')}</div>
+                  <div className="text-xs text-gray-500 mt-1">📍 Exact location revealed after payment</div>
                 </div>
                 <div className="bg-white/5 rounded-xl p-4 border border-white/10">
                   <div className="text-xs text-gray-400 mb-1">Category</div>
