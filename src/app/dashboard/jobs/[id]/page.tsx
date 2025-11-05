@@ -10,7 +10,7 @@ interface Job {
   enterprise_id: string
   title: string
   description: string
-  location: string
+  location: string | null
   status: 'pending' | 'in_progress' | 'completed' | 'cancelled'
   priority: 'low' | 'medium' | 'high' | 'urgent'
   due_date: string
@@ -391,10 +391,10 @@ export default function JobDetailPage() {
                   </div>
                   <input
                     type="text"
-                    value={job.location}
+                    value={job.location || ''}
                     onChange={(e) => setJob({ ...job, location: e.target.value })}
                     className="w-full text-2xl font-black text-white bg-transparent border-b-4 border-transparent hover:border-blue-400/40 focus:border-blue-400 focus:outline-none transition-all placeholder-gray-700"
-                    placeholder="Enter location"
+                    placeholder="No location set - click to add"
                   />
                 </div>
               </div>
