@@ -271,7 +271,7 @@ export default function DashboardPage() {
         // Line 2: County/State
         // Line 3: Postcode/ZIP
         // Line 4: Country
-        const locationLines = job.location.split('\n').filter(line => line.trim())
+        const locationLines = job.location.split('\n').filter((line: string) => line.trim())
         const postcode = locationLines[3] || ''
         const country = locationLines[4] || 'GB'
         const fullAddress = locationLines.join(', ')
