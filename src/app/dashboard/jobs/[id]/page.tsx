@@ -377,7 +377,7 @@ export default function JobDetailPage() {
               <div className="md:col-span-2 relative overflow-hidden bg-gradient-to-br from-blue-500/15 via-blue-500/5 to-transparent backdrop-blur-xl rounded-[2rem] border border-blue-500/30 p-10 shadow-2xl shadow-blue-500/10 hover:shadow-blue-500/20 transition-all group">
                 <div className="absolute top-0 right-0 w-48 h-48 bg-blue-500/20 rounded-full blur-3xl group-hover:scale-150 transition-transform"></div>
                 <div className="relative">
-                  <div className="flex items-center gap-4 mb-6">
+                  <div className="flex items-center gap-4 mb-8">
                     <div className="w-16 h-16 bg-blue-500/30 rounded-2xl flex items-center justify-center shadow-lg shadow-blue-500/30">
                       <svg className="w-8 h-8 text-blue-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
@@ -392,16 +392,32 @@ export default function JobDetailPage() {
                   <textarea
                     value={job.location || ''}
                     onChange={(e) => setJob({ ...job, location: e.target.value })}
-                    rows={5}
-                    className="w-full text-lg font-bold text-white bg-black/20 border-2 border-white/10 rounded-2xl p-6 focus:outline-none focus:border-blue-400 focus:ring-4 focus:ring-blue-400/20 resize-none transition-all placeholder-gray-600 leading-relaxed"
-                    placeholder="Enter full address (each line):
-House/Building Number
-Street Name
-City
-County/State
-Postcode/Zipcode
-Country"
+                    rows={7}
+                    className="w-full text-lg font-bold text-white bg-black/20 border-2 border-white/10 rounded-2xl p-6 focus:outline-none focus:border-blue-400 focus:ring-4 focus:ring-blue-400/20 resize-none transition-all placeholder-gray-500 leading-loose"
+                    placeholder="Line 1: House/Building Number & Street Name&#10;Line 2: City&#10;Line 3: County/State&#10;Line 4: Postcode/ZIP Code&#10;Line 5: Country"
                   />
+                  <div className="mt-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                    <div className="flex items-center gap-2 text-xs text-gray-400">
+                      <div className="w-1 h-1 rounded-full bg-blue-400"></div>
+                      <span>Line 1: Street Address</span>
+                    </div>
+                    <div className="flex items-center gap-2 text-xs text-gray-400">
+                      <div className="w-1 h-1 rounded-full bg-blue-400"></div>
+                      <span>Line 2: City</span>
+                    </div>
+                    <div className="flex items-center gap-2 text-xs text-gray-400">
+                      <div className="w-1 h-1 rounded-full bg-blue-400"></div>
+                      <span>Line 3: County/State</span>
+                    </div>
+                    <div className="flex items-center gap-2 text-xs text-gray-400">
+                      <div className="w-1 h-1 rounded-full bg-blue-400"></div>
+                      <span>Line 4: Postcode/ZIP</span>
+                    </div>
+                    <div className="flex items-center gap-2 text-xs text-gray-400">
+                      <div className="w-1 h-1 rounded-full bg-blue-400"></div>
+                      <span>Line 5: Country</span>
+                    </div>
+                  </div>
                 </div>
               </div>
 
