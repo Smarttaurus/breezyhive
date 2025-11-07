@@ -169,7 +169,7 @@ export default function NotificationBell() {
       {/* Bell Icon Button */}
       <button
         onClick={() => setShowDropdown(!showDropdown)}
-        className="relative p-2 hover:bg-white/10 rounded-lg transition-all"
+        className="relative bg-gradient-to-br from-white/5 to-transparent backdrop-blur-md border border-white/20 rounded-xl px-3 py-2 hover:border-white/30 hover:bg-white/10 transition-all flex items-center justify-center"
       >
         <div className="relative">
           <svg
@@ -188,7 +188,7 @@ export default function NotificationBell() {
 
           {/* Unread Badge */}
           {unreadCount > 0 && (
-            <div className="absolute -top-1 -right-1 w-5 h-5 bg-red-500 rounded-full flex items-center justify-center ring-2 ring-[#0f1729]">
+            <div className="absolute -top-2 -right-2 w-5 h-5 bg-red-500 rounded-full flex items-center justify-center ring-2 ring-black/50">
               <span className="text-white text-xs font-bold">
                 {unreadCount > 9 ? '9+' : unreadCount}
               </span>
