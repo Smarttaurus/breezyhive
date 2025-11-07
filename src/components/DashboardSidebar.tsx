@@ -3,6 +3,7 @@
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { useState } from 'react'
+import NotificationBell from './NotificationBell'
 
 export default function DashboardSidebar() {
   const pathname = usePathname()
@@ -10,6 +11,7 @@ export default function DashboardSidebar() {
 
   const navigation = [
     { name: 'Dashboard', href: '/dashboard', icon: '📊' },
+    { name: 'Notifications', href: '/dashboard/notifications', icon: '🔔' },
     { name: 'Employees', href: '/dashboard/employees', icon: '👥' },
     { name: 'Jobs', href: '/dashboard/jobs', icon: '🔧' },
     { name: 'Time Entries', href: '/dashboard/time-entries', icon: '⏰' },
@@ -40,6 +42,13 @@ export default function DashboardSidebar() {
           </div>
         )}
       </div>
+
+      {/* Notification Bell */}
+      {!isCollapsed && (
+        <div className="px-4 pt-4 pb-2">
+          <NotificationBell />
+        </div>
+      )}
 
       {/* Navigation */}
       <nav className="p-4 space-y-2">
