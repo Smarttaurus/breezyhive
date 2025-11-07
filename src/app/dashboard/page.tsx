@@ -5,6 +5,7 @@ import { supabase } from '@/lib/supabase'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import DashboardSidebar from '@/components/DashboardSidebar'
+import NotificationBell from '@/components/NotificationBell'
 import dynamic from 'next/dynamic'
 
 // Dynamically import map to avoid SSR issues
@@ -518,6 +519,10 @@ export default function DashboardPage() {
               </div>
             </Link>
 
+            {/* Notification Bell */}
+            <div className="bg-gradient-to-br from-white/5 to-transparent backdrop-blur-md border border-white/20 rounded-xl">
+              <NotificationBell />
+            </div>
           </div>
         </div>
       </div>

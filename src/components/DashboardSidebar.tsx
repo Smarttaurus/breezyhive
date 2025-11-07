@@ -3,7 +3,6 @@
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { useState } from 'react'
-import NotificationBell from './NotificationBell'
 
 export default function DashboardSidebar() {
   const pathname = usePathname()
@@ -42,13 +41,6 @@ export default function DashboardSidebar() {
           </div>
         )}
       </div>
-
-      {/* Notification Bell */}
-      {!isCollapsed && (
-        <div className="px-4 pt-4 pb-2">
-          <NotificationBell />
-        </div>
-      )}
 
       {/* Navigation */}
       <nav className="p-4 space-y-2">
