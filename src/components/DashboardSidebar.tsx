@@ -14,6 +14,7 @@ export default function DashboardSidebar() {
     { name: 'Jobs', href: '/dashboard/jobs', icon: '🔧' },
     { name: 'Time Entries', href: '/dashboard/time-entries', icon: '⏰' },
     { name: 'Expenses', href: '/dashboard/expenses', icon: '💰' },
+    { name: 'Wallet', href: '/dashboard/wallet', icon: '💳' },
     { name: 'Marketplace', href: '/dashboard/marketplace', icon: '🏪' },
     { name: 'Reports', href: '/dashboard/reports', icon: '📈' },
   ]
