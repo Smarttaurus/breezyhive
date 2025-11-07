@@ -520,7 +520,7 @@ export default function DashboardPage() {
             </Link>
 
             {/* Notification Bell */}
-            <div className="bg-gradient-to-br from-white/5 to-transparent backdrop-blur-md border border-white/20 rounded-xl">
+            <div className="bg-gradient-to-br from-white/5 to-transparent backdrop-blur-md border border-white/20 rounded-xl p-1">
               <NotificationBell />
             </div>
           </div>
